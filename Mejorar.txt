@@ -1,0 +1,35 @@
+Mesas:
+-Qr de menú
+-Cantidad de personas por mesa
+-Separar mesas por categoría 
+----------------------------------------------
+Productos:
+-Poner imagen de producto en detalle de venta
+----------------------------------------------
+Pedido:
+-Opcionales: cremas
+-Ubicación de delivery
+-Nombre de cliente en delivery
+-bolsa o taper en para llevar
+-tipo de pago, yape plin, efectivo tarjeta
+---------------------------------------------
+Ticket:
+-falta logo
+-Colocar tipo de pedido
+-nombre de cliente
+-corregir el "Atiende:"
+-corregir el $
+-numero de ticket de venta
+----------------------------------------------
+Ordenes activas
+-cambiar Usuario por nombre de usuario
+-numero de ticket
+- cambiar reimprimir por "imprimir"
+- mesas por categoría (color)
+----------------------------------------------
+Sección usuarios:
+Tipo de usuario (borrar administrador)
+
+---------------------------------------------
+Login:
+Colocar logo

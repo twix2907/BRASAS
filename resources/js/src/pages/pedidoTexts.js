@@ -1,0 +1,21 @@
+export const pedidoTexts = {
+  tipo: 'Tipo',
+  mesa: 'Mesa',
+  producto: 'Producto',
+  cantidad: 'Cantidad',
+  notas: 'Notas',
+  agregar: 'Agregar',
+  confirmar: 'Confirmar pedido',
+  seleccionaMesa: 'Selecciona una mesa',
+  seleccionaProducto: 'Selecciona producto',
+  noMesas: 'No hay mesas disponibles',
+  noProductos: 'No hay productos disponibles',
+  errorMesas: 'Error al cargar las mesas.',
+  errorProductos: 'Error al cargar los productos.',
+  pedidoExito: '¡Pedido creado exitosamente!',
+  pedidoError: 'Error al crear el pedido',
+  mesaObligatoria: 'Selecciona una mesa.',
+  productoObligatorio: 'Selecciona un producto.',
+  cantidadObligatoria: 'Cantidad inválida.',
+  sinItems: 'Agrega al menos un producto al pedido.'
+};

@@ -1,0 +1,468 @@
+/* Toast flotante para feedback de confirmación */
+.toastConfirm {
+  position: fixed;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #ffd203 80%, #fffbe7 100%);
+  color: #010001;
+  font-weight: 900;
+  font-size: 1.3rem;
+  padding: 1.1rem 2.2rem;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.13);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  animation: toastFadeInOut 2.2s cubic-bezier(.4,1.4,.6,1) forwards;
+}
+
+@keyframes toastFadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+.cantidadNotasCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  width: 100%;
+  margin-bottom: 0.7rem;
+}
+.cantidadNotasLabel {
+  margin-left: 12px;
+  font-size: 1.1rem;
+  color: #ffd203;
+  font-weight: 700;
+  min-width: 70px;
+}
+.cantidadNotasNotaLen {
+  margin-left: 4px;
+  color: #aaa;
+  font-size: 13px;
+  align-self: flex-end;
+}
+/* Estado de error para inputCantidad */
+.inputCantidad.error {
+  border: 2.5px solid #ff4d4f !important;
+  background: #2a1818;
+  color: #ffd203;
+}
+/* Campos de cantidad y notas: estilos modernos, cómodos y accesibles */
+.inputCantidad {
+  border-radius: 14px;
+  border: 2.5px solid #ffd203;
+  padding: 1.1em 1.3em;
+  font-size: 1.3rem;
+  background: #232323;
+  color: #ffd203;
+  outline: none;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 160px;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+  font-weight: 700;
+}
+.inputCantidad:focus {
+  border: 2.5px solid #fffbe7;
+}
+
+.inputNota {
+  border-radius: 14px;
+  border: 2.5px solid #ffd203;
+  padding: 1.1em 1.3em;
+  font-size: 1.15rem;
+  background: #232323;
+  color: #ffd203;
+  outline: none;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  min-height: 48px;
+  max-width: 340px;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+  font-weight: 600;
+  resize: vertical;
+}
+.inputNota:focus {
+  border: 2.5px solid #fffbe7;
+}
+
+@media (max-width: 700px) {
+  .inputCantidad, .inputNota {
+    font-size: 1rem;
+    padding: 0.7em 0.7em;
+    border-radius: 10px;
+    max-width: 100%;
+  }
+}
+/* Fila para selects de tipo y mesa, ambos con el mismo ancho */
+.tipoMesaRow {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 0.7rem;
+  width: 100%;
+}
+
+/* Selects de tipo y mesa: mismo ancho, responsivo */
+.selectPedido {
+  max-width: 220px;
+  width: 100%;
+  min-width: 120px;
+  font-size: 1.1rem;
+  border-radius: 14px;
+  border: 2.5px solid #ffd203;
+  padding: 0.7em 1.1em;
+  background: #232323;
+  color: #ffd203;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+  font-weight: 700;
+  outline: none;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.selectPedido:focus {
+  border: 2.5px solid #fffbe7;
+}
+@media (max-width: 700px) {
+  .tipoMesaRow {
+    flex-direction: column;
+    gap: 0.7rem;
+    align-items: stretch;
+  }
+  .selectPedido {
+    max-width: 100%;
+    min-width: 0;
+    font-size: 1rem;
+    padding: 0.7em 0.7em;
+  }
+}
+
+/* Compacta y sin duplicados */
+/* Selector visual de productos para NuevoPedido */
+.productoListaSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: 100%;
+  max-width: 520px;
+}
+.labelBusqueda {
+  font-size: 1.1rem;
+  color: #ffd203;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+.inputBusqueda {
+  border-radius: 12px;
+  border: 2px solid #ffd203;
+  padding: 0.7em 1.1em;
+  font-size: 1.2rem;
+  background: #232323;
+  color: #ffd203;
+  outline: none;
+  margin-bottom: 0.5rem;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+}
+.inputBusqueda:focus {
+  border: 2px solid #fffbe7;
+}
+.productoMsg {
+  color: #ffd203;
+  font-size: 1.1rem;
+  text-align: center;
+  margin: 1.2rem 0;
+}
+.productoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.7rem;
+  width: 100%;
+}
+.productoCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #181818;
+  border: 2.5px solid transparent;
+  border-radius: 14px;
+  padding: 0.7rem 0.5rem 0.6rem 0.5rem;
+  cursor: pointer;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.10);
+  min-width: 0;
+  min-height: 0;
+  outline: none;
+}
+.productoCard:hover, .productoCard:focus {
+  border: 2.5px solid #ffd203;
+  box-shadow: 0 2px 8px 0 rgba(255,210,3,0.10);
+}
+.productoCardActivo {
+  border: 2.5px solid #fffbe7;
+  box-shadow: 0 2px 12px 0 rgba(255,210,3,0.18);
+}
+.productoImg {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #333;
+  margin-bottom: 0.4rem;
+}
+.productoInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+.productoNombre {
+  color: #ffd203;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.1rem;
+}
+.productoPrecio {
+  color: #fffbe7;
+  font-size: 1rem;
+  font-weight: 600;
+}
+/* Contenedor principal: ocupa toda la pantalla, sin animaciones */
+.formContainer {
+  background: #181818;
+  padding: 0;
+  border-radius: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+}
+
+
+/* Contenedor interior: ocupa todo el espacio, sin animaciones, distribución flexible */
+/* Layout principal: dos mitades, izquierda productos, derecha opciones */
+/* Layout principal: dos mitades, 100vh y sin cortes */
+.pedidoInner {
+  background: #232323;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  min-width: 0;
+  max-width: 100vw;
+  width: 100vw;
+  min-height: 0;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+  justify-items: stretch;
+  overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+  .pedidoInner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    min-height: 100vh;
+    height: auto;
+  }
+}
+
+/* Columna izquierda: productos */
+/* Columna izquierda: productos, scroll si overflow */
+.pedidoColProductos {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 2.5rem 2rem 2.5rem 3.5rem;
+  border-right: 2px solid #181818;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  background: #232323;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+@media (max-width: 1100px) {
+  .pedidoColProductos {
+    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    border-right: none;
+    border-bottom: 2px solid #181818;
+    min-height: 0;
+    height: auto;
+  }
+}
+.buscadorProductos {
+  margin-bottom: 1.2rem;
+}
+.productoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .productoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .productoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Columna derecha: opciones y acciones */
+/* Columna derecha: opciones, scroll si overflow */
+/* Columna derecha: opciones, scroll solo en el panel de arriba, acciones siempre visibles */
+.pedidoColOpciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 2.5rem 3.5rem 2.5rem 2rem;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  background: #232323;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.pedidoOpcionesArriba {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: calc(100dvh - 180px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  justify-content: flex-start;
+}
+.pedidoOpcionesAbajo {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  background: #232323;
+  z-index: 2;
+  position: sticky;
+  bottom: 0;
+  padding-bottom: 1.2rem;
+  box-sizing: border-box;
+}
+@media (max-width: 1100px) {
+  .pedidoColOpciones {
+    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    min-height: 0;
+    height: auto;
+  }
+}
+.pedidoOpcionesArriba {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  justify-content: flex-start;
+}
+.pedidoOpcionesAbajo {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Fila de campos, separación generosa */
+.pedidoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.6rem;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+.pedidoRow:last-child {
+  margin-bottom: 0;
+}
+/* Lista de productos del pedido */
+.pedidoItemsList {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+/* Botón más grande y cómodo */
+.botonConfirmar {
+  margin-top: 2.2rem;
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(90deg, #ffd203 80%, #fffbe7 100%);
+  color: #010001;
+  border: none;
+  border-radius: 18px;
+  padding: 1.7rem 0;
+  font-weight: 900;
+  font-size: 2rem;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+  margin: 0 auto 0 auto;
+  outline: none;
+  will-change: background, box-shadow, transform;
+}
+.botonConfirmar:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+}
+.botonConfirmar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ffd203;
+}
+/* Título aún más grande */
+.titulo {
+  color: #ffd203;
+  font-size: 3.1rem;
+  font-family: 'Nunito Sans', 'Roboto', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  margin-bottom: 34px;
+  text-align: center;
+  line-height: 1.1;
+}
+.successMsg {
+  color: #4caf50;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+.errorMsg {
+  color: #ff4d4f;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* ...existing code... */
+
+/* Responsive para tablets y móviles */
