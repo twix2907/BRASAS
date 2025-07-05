@@ -4,7 +4,7 @@ import axios from '../axiosConfig';
 
 export default function Usuarios() {
   const { usuarios, loading, error, refetch } = useUsuarios();
-  const [form, setForm] = useState({ name: '', username: '', role: 'mesero', pin: '' });
+  const [form, setForm] = useState({ name: '', username: '', role: 'mesero', pin: '' }); // default sigue siendo mesero
   const [editId, setEditId] = useState(null);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -139,9 +139,27 @@ export default function Usuarios() {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: '#222', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
-      <h2 style={{ color: '#ffd203', margin: '32px 0 24px 0' }}>Gestión de Usuarios</h2>
-      <div style={{ display: 'flex', width: '100%', maxWidth: 1400, flex: 1, gap: 32, alignItems: 'flex-start', justifyContent: 'center', padding: 0 }}>
+    <div style={{ 
+      height: '100%', 
+      width: '100%', 
+      background: '#222', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      padding: '24px',
+      boxSizing: 'border-box',
+      minHeight: 0,
+      overflow: 'hidden'
+    }}>
+      <h2 style={{ color: '#ffd203', margin: '0 0 24px 0', textAlign: 'center', flexShrink: 0 }}>Gestión de Usuarios</h2>
+      <div style={{ 
+        display: 'flex', 
+        width: '100%', 
+        maxWidth: 1400, 
+        flex: 1, 
+        gap: 32, 
+        alignSelf: 'center',
+        minHeight: 0
+      }}>
         {/* Formulario crear/editar usuario */}
         <div style={{ flex: '0 0 340px', background: '#232323', borderRadius: 18, padding: 24, minHeight: 420, boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)' }}>
           <div style={{ color: '#ffd203', fontWeight: 700, fontSize: 18, marginBottom: 18 }}>{editId ? 'Editar usuario' : 'Crear usuario'}</div>
@@ -171,6 +189,7 @@ export default function Usuarios() {
               >
                 <option value="mesero">Mesero</option>
                 <option value="cajero">Cajero</option>
+                <option value="cocina">Cocina</option>
                 <option value="admin">Administrador</option>
               </select>
               {!editId && (
@@ -192,9 +211,35 @@ export default function Usuarios() {
           </form>
         </div>
         {/* Lista de usuarios */}
-        <div style={{ flex: 1, minWidth: 0, maxHeight: 600, overflowY: 'auto', background: 'none', padding: 0 }}>
-          {loading ? <div style={{ color: '#fff' }}>Cargando usuarios...</div> : error ? <div style={{ color: 'red' }}>{error}</div> : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', background: 'none' }}>
+        <div style={{ 
+          flex: 1, 
+          minWidth: 0,
+          background: '#232323', 
+          borderRadius: 18, 
+          padding: 24, 
+          boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0
+        }}>
+          <div style={{ color: '#ffd203', fontWeight: 700, fontSize: 18, marginBottom: 18, flexShrink: 0 }}>Lista de usuarios</div>
+          {loading ? (
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: '#fff' 
+            }}>Cargando usuarios...</div>
+          ) : error ? (
+            <div style={{ color: 'red' }}>{error}</div>
+          ) : (
+            <div style={{ 
+              flex: 1, 
+              minHeight: 0, 
+              overflowY: 'auto'
+            }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'none' }}>
               <thead>
                 <tr style={{ color: '#ffd203', fontWeight: 700, fontSize: 15, background: 'none' }}>
                   <th style={{ padding: 8, textAlign: 'left' }}>Nombre</th>
@@ -243,6 +288,7 @@ export default function Usuarios() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

@@ -2,6 +2,10 @@ import React from 'react';
 
 // props: tipo, setTipo, mesaId, setMesaId, mesasLibres, clientName, setClientName, deliveryLocation, setDeliveryLocation
 const PedidoTipoForm = ({ tipo, setTipo, mesaId, setMesaId, mesasLibres, clientName, setClientName, deliveryLocation, setDeliveryLocation }) => {
+  // Limitar opciones si el usuario es cajero
+  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+  const esCajero = usuario?.role === 'cajero';
+  const esMesero = usuario?.role === 'mesero';
   return (
     <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
@@ -12,12 +16,13 @@ const PedidoTipoForm = ({ tipo, setTipo, mesaId, setMesaId, mesasLibres, clientN
           onChange={e => setTipo(e.target.value)}
           style={{ maxWidth: 180, width: '100%', fontSize: 16, borderRadius: 12, border: '2.5px solid #ffd203', padding: '0.7em 1.1em', background: '#232323', color: '#ffd203', fontWeight: 700, outline: 'none' }}
         >
-          <option value="mesa">Mesa</option>
-          <option value="para_llevar">Para llevar</option>
-          <option value="delivery">Delivery</option>
+          {(!esCajero || esMesero) && <option value="mesa">Mesa</option>}
+          {!esMesero && <option value="para_llevar">Para llevar</option>}
+          {!esMesero && <option value="delivery">Delivery</option>}
         </select>
       </div>
-      {tipo === 'mesa' && (
+      {/* Mostrar selector de mesa solo si el tipo es mesa y el usuario NO es cajero */}
+      {tipo === 'mesa' && !esCajero && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <label htmlFor="mesa-select" style={{ color: '#ffd203', fontWeight: 700, fontSize: 18 }}>Mesa:</label>
           <select

@@ -1,9 +1,9 @@
 import React from 'react';
 import placeholderImage from '../../../public/placeholder_brasas.png';
 
-// props: productos, filtro, onFiltroChange, onSelect, productoSeleccionado
+// props: productos, filtro, onFiltroChange, onAgregar, productoSeleccionado
 
-const ProductosGrid = ({ productos, filtro, onFiltroChange, onSelect, productoSeleccionado, soloMatrizScrollable }) => {
+const ProductosGrid = ({ productos, filtro, onFiltroChange, onAgregar, productoSeleccionado, onSelect }) => {
   // Filtro local por nombre/categoría
   const [busqueda, setBusqueda] = React.useState(filtro || '');
   const productosFiltrados = productos.filter(p =>
@@ -12,16 +12,16 @@ const ProductosGrid = ({ productos, filtro, onFiltroChange, onSelect, productoSe
   );
 
   return (
-    <div style={{ 
-      width: '100%', 
+    <div style={{
+      width: '100%',
       height: '100%',
-      display: 'flex', 
+      display: 'flex',
       flexDirection: 'column'
     }}>
       {/* Sección superior: Buscador (fijo) */}
-      <div style={{ 
+      <div style={{
         flexShrink: 0,
-        marginBottom: 18 
+        marginBottom: 18
       }}>
         <label htmlFor="busqueda-producto" style={{ color: '#ffd203', fontWeight: 700, fontSize: 18, marginBottom: 4, display: 'block' }}>Buscar producto o categoría</label>
         <input
@@ -45,48 +45,86 @@ const ProductosGrid = ({ productos, filtro, onFiltroChange, onSelect, productoSe
         />
       </div>
 
-      {/* Sección inferior: Matriz de productos (scrollable) */}
-      <div style={{
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
-        overflowX: 'hidden'
-      }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 18,
-          padding: '4px'
-        }}>
-          {productosFiltrados.length === 0 && (
-            <div style={{ gridColumn: '1/-1', color: '#ffd203', fontSize: 18, textAlign: 'center', marginTop: 24 }}>No hay productos</div>
-          )}
-          {productosFiltrados.map(prod => (
-            <div
-              key={prod.id}
-              tabIndex={0}
-              onClick={() => onSelect(prod.id)}
-              onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onSelect(prod.id)}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#181818',
-                border: prod.id === Number(productoSeleccionado) ? '2.5px solid #fffbe7' : '2.5px solid transparent',
-                borderRadius: 14, padding: '0.7rem 0.5rem 0.6rem 0.5rem', cursor: 'pointer',
-                boxShadow: prod.id === Number(productoSeleccionado) ? '0 2px 12px 0 rgba(255,210,3,0.18)' : '0 1px 4px 0 rgba(0,0,0,0.10)',
-                outline: 'none', minWidth: 0, minHeight: 0, transition: 'border 0.18s, box-shadow 0.18s',
-              }}
-            >
-              <img
-                src={prod.image_url || placeholderImage}
-                alt={prod.name}
-                style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 10, background: '#333', marginBottom: 8 }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <span style={{ color: '#ffd203', fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 2 }}>{prod.name}</span>
-                <span style={{ color: '#fffbe7', fontSize: 15, fontWeight: 600 }}>S/ {Number(prod.price || 0).toFixed(2)}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Tabla de productos */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
+          <thead>
+            <tr style={{ background: '#181818' }}>
+              <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203' }}>Imagen</th>
+              <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'left', borderBottom: '2px solid #ffd203' }}>Nombre</th>
+              <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203' }}>Precio</th>
+              <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203' }}>Agregar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {productosFiltrados.length === 0 && (
+              <tr>
+                <td colSpan={4} style={{ color: '#ffd203', fontSize: 18, textAlign: 'center', padding: 24 }}>No hay productos</td>
+              </tr>
+            )}
+            {productosFiltrados.map(prod => {
+              const seleccionado = prod.id === Number(productoSeleccionado);
+              return (
+                <tr
+                  key={prod.id}
+                  tabIndex={0}
+                  onClick={() => onSelect && onSelect(prod.id)}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (onSelect && onSelect(prod.id))}
+                  style={{
+                    background: 'transparent',
+                    borderRadius: 10,
+                    borderBottom: '1px solid #333',
+                    transition: 'border 0.15s',
+                    cursor: 'pointer',
+                    outline: seleccionado ? '2.5px solid #ffd203' : 'none',
+                    border: seleccionado ? '2.5px solid #ffd203' : '2.5px solid transparent'
+                  }}
+                >
+                  <td style={{ textAlign: 'center', padding: '6px' }}>
+                    <img
+                      src={prod.image_url || placeholderImage}
+                      alt={prod.name}
+                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, background: '#333' }}
+                    />
+                  </td>
+                  <td style={{ color: '#ffd203', fontWeight: 700, fontSize: 15, padding: '6px', textAlign: 'left', maxWidth: 120 }}>
+                    <span style={seleccionado ? {
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      display: 'block',
+                    } : {
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
+                      maxWidth: 120
+                    }}>
+                      {prod.name}
+                    </span>
+                  </td>
+                  <td style={{ color: '#fffbe7', fontWeight: 700, fontSize: 15, padding: '6px', textAlign: 'center' }}>S/ {Number(prod.price || 0).toFixed(2)}</td>
+                  <td style={{ textAlign: 'center', padding: '6px' }}>
+                    <button
+                      onClick={e => { e.stopPropagation(); onAgregar(prod); }}
+                      style={{
+                        background: seleccionado ? '#ffd203' : '#232323',
+                        color: seleccionado ? '#010001' : '#ffd203',
+                        border: '2px solid #ffd203',
+                        borderRadius: 8,
+                        padding: '0.3rem 0.8rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontSize: 14
+                      }}
+                    >
+                      Agregar
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

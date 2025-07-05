@@ -24,6 +24,7 @@ const MesasPage = () => {
   // Obtener usuario actual para verificar permisos
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const esAdmin = usuario.role === 'admin';
+  const esMesero = usuario.role === 'mesero';
 
   // Custom hooks
   const { mesas, loading, error, refetch, updateMesaLocal, addMesaLocal, removeMesaLocal } = useMesas();
@@ -114,10 +115,13 @@ const MesasPage = () => {
       <div style={STYLES.content}>
         <h2 style={STYLES.title}>Gestión de Mesas</h2>
         
-        <MesaForm 
-          onSubmit={createMesa} 
-          isLoading={editState.loading} 
-        />
+        {/* Solo admin puede ver el formulario para agregar mesa */}
+        {esAdmin && (
+          <MesaForm 
+            onSubmit={createMesa} 
+            isLoading={editState.loading} 
+          />
+        )}
         
         {error && (
           <p style={STYLES.errorText}>{error}</p>
@@ -138,15 +142,16 @@ const MesasPage = () => {
                   ordenActiva={ordenActiva}
                   isEditing={editState.mesaId === mesa.id}
                   editState={editState}
-                  onEdit={startEdit}
-                  onSaveEdit={handleSaveEdit}
-                  onCancelEdit={cancelEdit}
-                  onToggleStatus={toggleMesaStatus}
-                  onOcupacionChange={handleOcupacionChange}
+                  onEdit={esAdmin ? startEdit : undefined}
+                  onSaveEdit={esAdmin ? handleSaveEdit : undefined}
+                  onCancelEdit={esAdmin ? cancelEdit : undefined}
+                  onToggleStatus={esAdmin ? toggleMesaStatus : undefined}
+                  onOcupacionChange={esAdmin ? handleOcupacionChange : undefined}
                   onOpenDetail={handleOpenDetail}
-                  onDelete={handleDeleteMesa}
-                  setEditState={setEditState}
+                  onDelete={esAdmin ? handleDeleteMesa : undefined}
+                  setEditState={esAdmin ? setEditState : undefined}
                   esAdmin={esAdmin}
+                  esMesero={esMesero}
                 />
               );
             })
@@ -186,6 +191,35 @@ const MesasPage = () => {
               }}>
                 Total: <span style={{ color: '#ffd203' }}>${ordenDetalle.total}</span>
               </div>
+              {/* Botón Pedir cuenta solo si la orden está activa */}
+              {ordenDetalle.estado === 'activo' && (
+                <button
+                  style={{
+                    marginTop: 18,
+                    background: '#ffd203',
+                    color: '#010001',
+                    fontWeight: 900,
+                    border: 'none',
+                    borderRadius: 10,
+                    padding: '0.8rem 2.2rem',
+                    fontSize: 18,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px #0005',
+                  }}
+                  onClick={async () => {
+                    try {
+                      await import('../../axiosConfig').then(({ default: axios }) =>
+                        axios.patch(`/api/orders/${ordenDetalle.id}`, { status: 'por_cobrar' })
+                      );
+                      setModalOpen(false);
+                    } catch (err) {
+                      alert('No se pudo marcar la orden como lista para cobrar.');
+                    }
+                  }}
+                >
+                  Pedir cuenta
+                </button>
+              )}
             </>
           )}
         </ModalOrdenDetalle>

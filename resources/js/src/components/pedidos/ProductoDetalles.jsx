@@ -25,7 +25,7 @@ const ProductoDetalles = ({ producto }) => {
     <div style={{
       width: '100%',
       maxWidth: 320,
-      padding: '1.2rem',
+      padding: '1rem',
       background: '#181818',
       borderRadius: 16,
       border: '2px solid #ffd203',
@@ -33,13 +33,13 @@ const ProductoDetalles = ({ producto }) => {
       boxSizing: 'border-box'
     }}>
       {/* Imagen del producto */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '0.8rem' }}>
         <img
           src={producto.image_url || placeholderImage}
           alt={producto.name}
           style={{
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             objectFit: 'cover',
             borderRadius: 12,
             background: '#333',
@@ -51,57 +51,37 @@ const ProductoDetalles = ({ producto }) => {
       {/* Nombre del producto */}
       <div style={{
         color: '#ffd203',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 700,
         textAlign: 'center',
-        marginBottom: '0.5rem',
-        lineHeight: 1.3
+        marginBottom: '0.4rem',
+        lineHeight: 1.2
       }}>
         {producto.name}
       </div>
-
-      {/* Precio */}
-      <div style={{
-        color: '#fffbe7',
-        fontSize: 24,
-        fontWeight: 700,
-        textAlign: 'center',
-        marginBottom: '1rem'
-      }}>
-        S/ {Number(producto.price || 0).toFixed(2)}
-      </div>
-
-      {/* Categoría */}
-      {producto.category && (
-        <div style={{
-          display: 'inline-block',
-          background: '#ffd203',
-          color: '#010001',
-          padding: '0.3rem 0.8rem',
-          borderRadius: 20,
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: '1rem',
-          width: '100%',
-          textAlign: 'center',
-          boxSizing: 'border-box'
-        }}>
-          {producto.category}
-        </div>
-      )}
 
       {/* Descripción */}
       {producto.description && (
         <div style={{
           color: '#ccc',
-          fontSize: 15,
-          lineHeight: 1.4,
+          fontSize: 13,
+          lineHeight: 1.3,
           textAlign: 'center',
-          marginTop: '0.5rem'
+          marginBottom: '0.6rem'
         }}>
           {producto.description}
         </div>
       )}
+
+      {/* Precio */}
+      <div style={{
+        color: '#fffbe7',
+        fontSize: 20,
+        fontWeight: 700,
+        textAlign: 'center'
+      }}>
+        S/ {Number(producto.price || 0).toFixed(2)}
+      </div>
     </div>
   );
 };

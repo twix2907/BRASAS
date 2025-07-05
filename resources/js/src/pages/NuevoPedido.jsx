@@ -14,6 +14,7 @@ import styles from '../components/pedidos/NuevoPedido.module.css';
 import { pedidoTexts } from './pedidoTexts';
 import { printTicket } from '../helpers/printTicket';
 
+
 function NuevoPedido({ onPedidoCreado }) {
   const location = useLocation();
   const { mesas, loading: loadingMesas, error: mesasError } = useMesas();
@@ -26,13 +27,21 @@ function NuevoPedido({ onPedidoCreado }) {
   };
   const [mesaId, setMesaId] = useState(getMesaFromQuery());
 
+  // Detectar rol de usuario para tipo inicial
+  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+  const esCajero = usuario?.role === 'cajero';
+  const esMesero = usuario?.role === 'mesero';
+  // Si es cajero, tipo inicial debe ser 'para_llevar', si no, 'mesa'
+  const tipoInicial = esCajero ? 'para_llevar' : 'mesa';
+  const [tipo, setTipo] = useState(tipoInicial);
+
   // Si cambia la URL (ej: navegación interna), actualizar mesaId
   useEffect(() => {
     const mesaParam = getMesaFromQuery();
     if (mesaParam && mesaParam !== mesaId) setMesaId(mesaParam);
     // eslint-disable-next-line
   }, [location.search]);
-  const [tipo, setTipo] = useState('mesa');
+
   const [items, setItems] = useState([]);
   const [clientName, setClientName] = useState('');
   const [deliveryLocation, setDeliveryLocation] = useState('');
@@ -121,7 +130,12 @@ function NuevoPedido({ onPedidoCreado }) {
 
       setItems([]);
       setMesaId('');
-      setTipo('mesa');
+      // Reiniciar tipo según rol
+      if (esCajero) {
+        setTipo('para_llevar');
+      } else {
+        setTipo('mesa');
+      }
       setClientName('');
       setDeliveryLocation('');
       setSuccessMsg(pedidoTexts.pedidoExito);
@@ -131,13 +145,7 @@ function NuevoPedido({ onPedidoCreado }) {
         setSuccessMsg('');
       }, 2200);
       if (onPedidoCreado) onPedidoCreado();
-      // Obtener datos de impresión y llamar a printTicket
-      try {
-        const printRes = await axios.get(`/api/orders/${res.data.id}/print-data`);
-        await printTicket(printRes.data.pedido, 'ticket');
-      } catch (err) {
-        alert('El pedido fue creado pero no se pudo imprimir el ticket automáticamente. Puede reintentarlo desde órdenes activas.');
-      }
+      // Ya no imprimir automáticamente la comanda aquí. Solo cocina imprime automáticamente.
     } catch (err) {
       if (err.message.includes('Error')) {
         setError('Error de conexión al servidor');
@@ -151,145 +159,186 @@ function NuevoPedido({ onPedidoCreado }) {
 
   // Layout 3 columnas: productos | cantidad/notas/agregar | tipo de pedido + lista
   return (
-    <>
+    <div style={{ 
+      height: '100%', 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden',
+      background: '#232323'
+    }}>
       {showToast && (
         <div className={styles.toastConfirm}>{successMsg || pedidoTexts.pedidoExito}</div>
       )}
-      <div className={styles.formContainer}>
+      
+      {/* Contenedor principal de las 3 columnas */}
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        display: 'grid',
+        gridTemplateColumns: '1.2fr 0.9fr 1.3fr',
+        gap: 0,
+        background: '#232323',
+        alignItems: 'stretch',
+        justifyItems: 'stretch',
+        overflow: 'hidden',
+      }}>
+        {/* Columna 1: ProductosGrid */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.2fr 0.9fr 1.3fr',
-          gap: 0,
-          width: '100vw',
-          height: '100vh',
+          borderRight: '2px solid #181818',
+          padding: '20px 16px 20px 20px',
+          minWidth: 0,
+          minHeight: 0,
+          height: '100%',
           background: '#232323',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
           alignItems: 'stretch',
-          justifyItems: 'stretch',
-          overflow: 'hidden',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}>
-          {/* Columna 1: ProductosGrid (solo buscador y matriz, solo la matriz scrollable) */}
-          <div style={{
-            borderRight: '2px solid #181818',
-            padding: '2.5rem 1.2rem 2.5rem 3.5rem',
-            minWidth: 0,
-            minHeight: 0,
-            height: '100vh',
-            background: '#232323',
+          <ProductosGrid
+            productos={productos}
+            filtro={''}
+            onFiltroChange={() => {}}
+            onAgregar={prod => {
+              // Agrega 1 unidad del producto seleccionado
+              const idx = items.findIndex(i => i.product_id === prod.id && (i.notes || '').trim() === '');
+              if (idx !== -1) {
+                const nuevos = [...items];
+                nuevos[idx].quantity += 1;
+                setItems(nuevos);
+              } else {
+                setItems([
+                  ...items,
+                  {
+                    product_id: prod.id,
+                    name: prod.name,
+                    quantity: 1,
+                    price: prod.price,
+                    notes: ''
+                  }
+                ]);
+              }
+              setShowAgregado(true);
+              setTimeout(() => setShowAgregado(false), 1000);
+            }}
+            onSelect={setProductoId}
+            productoSeleccionado={productoId}
+            soloMatrizScrollable
+          />
+        </div>
+        
+        {/* Columna 2: CantidadNotasAgregar */}
+        <div style={{
+          padding: '20px 16px',
+          minWidth: 0,
+          minHeight: 0,
+          height: '100%',
+          background: '#232323',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          overflowY: 'auto',
+          boxSizing: 'border-box',
+          maxWidth: '100%'
+        }}>
+          {/* Sección 1: Detalles del producto seleccionado - completamente visible */}
+          <div style={{ 
+            flexShrink: 0,
+            width: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            alignItems: 'stretch',
-            boxSizing: 'border-box',
-            overflow: 'hidden'
+            justifyContent: 'center'
           }}>
-            <ProductosGrid
-              productos={productos}
-              filtro={''}
-              onFiltroChange={() => {}}
-              onSelect={id => setProductoId(id)}
-              productoSeleccionado={productoId}
-              soloMatrizScrollable
+            <ProductoDetalles 
+              producto={productoId ? productos.find(p => p.id === parseInt(productoId)) : null}
             />
           </div>
-          {/* Columna 2: CantidadNotasAgregar */}
-          <div style={{
-            padding: '2.5rem 1.2rem',
-            minWidth: 0,
-            minHeight: 0,
-            height: '100vh',
-            background: '#232323',
+          
+          {/* Sección 2: Cantidad, notas y agregar - completamente visible */}
+          <div style={{ 
+            flexShrink: 0,
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            overflow: 'hidden',
-            boxSizing: 'border-box',
-            maxWidth: '100%'
+            alignItems: 'center'
           }}>
-            {/* Sección 1: Detalles del producto seleccionado */}
-            <div style={{ flexShrink: 0, marginBottom: 18 }}>
-              <ProductoDetalles 
-                producto={productoId ? productos.find(p => p.id === parseInt(productoId)) : null}
-              />
-            </div>
-            
-            {/* Sección 2: Cantidad, notas y agregar */}
-            <div style={{ flexShrink: 0 }}>
-              <CantidadNotasAgregar
-                cantidad={cantidad}
-                setCantidad={setCantidad}
-                nota={nota}
-                setNota={setNota}
-                onAgregar={agregarItem}
-                productoSeleccionado={productoId}
-                showAgregado={showAgregado}
-                ajustarBotones
-              />
-            </div>
+            <CantidadNotasAgregar
+              cantidad={cantidad}
+              setCantidad={setCantidad}
+              nota={nota}
+              setNota={setNota}
+              onAgregar={agregarItem}
+              productoSeleccionado={productoId}
+              showAgregado={showAgregado}
+              ajustarBotones
+            />
           </div>
-          {/* Columna 3: PedidoTipoForm + PedidoItemsListPedido */}
-          <div style={{
-            padding: '2.5rem 3.5rem 0 1.2rem',
-            minWidth: 0,
-            minHeight: 0,
-            height: '100vh',
-            background: '#232323',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'stretch',
-            justifyContent: 'flex-start',
-            overflow: 'hidden',
-            boxSizing: 'border-box'
-          }}>
-            {/* Sección 1: Tipo de pedido y datos */}
-            <div style={{ flexShrink: 0, marginBottom: 18 }}>
-              <PedidoTipoForm
-                tipo={tipo}
-                setTipo={setTipo}
-                mesaId={mesaId}
-                setMesaId={setMesaId}
-                mesasLibres={mesas}
-                clientName={clientName}
-                setClientName={setClientName}
-                deliveryLocation={deliveryLocation}
-                setDeliveryLocation={setDeliveryLocation}
-              />
-            </div>
-            {/* Sección 2: Lista de productos agregados, scrollable y flexible */}
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', marginBottom: 18 }}>
-              <PedidoItemsListPedido
-                items={items}
-                onQuitar={quitarItem}
-                productos={productos}
-              />
-            </div>
-            {/* Sección 3: Botón confirmar, fijo y completo en la parte inferior */}
-            <div style={{ 
-              flexShrink: 0, 
-              background: '#232323', 
-              padding: '24px 0 2.5rem 0', 
-              zIndex: 20, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              boxShadow: '0 -2px 16px 0 rgba(0,0,0,0.10)',
-              position: 'relative'
-            }}>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading || (tipo === 'mesa' && !mesaId) || items.length === 0}
-                className={styles.botonConfirmar}
-                style={{ marginTop: 0, width: '100%', maxWidth: 480 }}
-              >
-                {pedidoTexts.confirmar}
-              </button>
-              {error && <div className={styles.errorMsg} style={{marginTop: 10}}>{error}</div>}
-            </div>
+        </div>
+        
+        {/* Columna 3: PedidoTipoForm + PedidoItemsListPedido */}
+        <div style={{
+          padding: '20px 20px 0 16px',
+          minWidth: 0,
+          minHeight: 0,
+          height: '100%',
+          background: '#232323',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          justifyContent: 'flex-start',
+          overflow: 'hidden',
+          boxSizing: 'border-box'
+        }}>
+          {/* Sección 1: Tipo de pedido y datos */}
+          <div style={{ flexShrink: 0, marginBottom: 18 }}>
+            <PedidoTipoForm
+              tipo={tipo}
+              setTipo={setTipo}
+              mesaId={mesaId}
+              setMesaId={setMesaId}
+              mesasLibres={mesas}
+              clientName={clientName}
+              setClientName={setClientName}
+              deliveryLocation={deliveryLocation}
+              setDeliveryLocation={setDeliveryLocation}
+            />
+          </div>
+          {/* Sección 2: Lista de productos agregados, scrollable y flexible */}
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', marginBottom: 18 }}>
+            <PedidoItemsListPedido
+              items={items}
+              onQuitar={quitarItem}
+              productos={productos}
+            />
+          </div>
+          {/* Sección 3: Botón confirmar, fijo y completo en la parte inferior */}
+          <div style={{ 
+            flexShrink: 0, 
+            background: '#232323', 
+            padding: '16px 0 20px 0', 
+            zIndex: 20, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            boxShadow: '0 -2px 16px 0 rgba(0,0,0,0.10)',
+            position: 'relative'
+          }}>            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || (tipo === 'mesa' && !mesaId) || items.length === 0}
+              className={styles.botonConfirmar}
+              style={{ marginTop: 0, width: '100%', maxWidth: 480 }}
+            >
+              {pedidoTexts.confirmar}
+            </button>
+            {error && <div className={styles.errorMsg} style={{marginTop: 10}}>{error}</div>}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

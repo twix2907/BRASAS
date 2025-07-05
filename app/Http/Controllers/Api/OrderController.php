@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Events\OrderActualizada;
+use App\Events\ComandaParaImprimir;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -100,7 +101,7 @@ class OrderController extends Controller
             'notes' => $validated['notes'] ?? null,
             'client_name' => $validated['type'] === 'delivery' ? $validated['client_name'] : null,
             'delivery_location' => $validated['type'] === 'delivery' ? $validated['delivery_location'] : null,
-            'status' => 'activo',
+            'status' => $validated['type'] === 'delivery' ? 'por_cobrar' : 'activo',
             'total' => collect($validated['items'])->sum(function($item) { return $item['price'] * $item['quantity']; }),
         ]);
 
@@ -123,8 +124,41 @@ class OrderController extends Controller
             }
         }
 
-        $orderWithItems = $order->load(['items.product']);
+        $orderWithItems = $order->load(['items.product', 'user']);
         event(new OrderActualizada($orderWithItems));
+
+        // Emitir evento SOLO para cocina: impresión automática de comanda
+        if ($validated['type'] === 'mesa' || $validated['type'] === 'para_llevar' || $validated['type'] === 'delivery') {
+            // Obtener datos de impresión (igual que printData)
+            $logoUrl = asset('images/logo.png');
+            $printData = [
+                'restaurante' => [
+                    'nombre' => "D'Brasas y Carbón",
+                    'logo_url' => $logoUrl,
+                    'eslogan' => 'El sabor auténtico a la brasa',
+                ],
+                'pedido' => [
+                    'id' => $orderWithItems->id,
+                    'tipo' => $orderWithItems->type,
+                    'mesa' => $orderWithItems->table_id,
+                    'usuario' => $orderWithItems->user ? ['id' => $orderWithItems->user->id, 'name' => $orderWithItems->user->name] : null,
+                    'fecha' => $orderWithItems->created_at ? $orderWithItems->created_at->format('Y-m-d H:i') : null,
+                    'productos' => $orderWithItems->items->map(function($item) {
+                        return [
+                            'nombre' => $item->product ? $item->product->name : 'Producto',
+                            'cantidad' => $item->quantity,
+                            'precio' => $item->price,
+                            'notas' => $item->notes,
+                        ];
+                    }),
+                    'total' => $orderWithItems->total,
+                    'notas' => $orderWithItems->notes,
+                    'client_name' => $orderWithItems->client_name,
+                    'delivery_location' => $orderWithItems->delivery_location,
+                ]
+            ];
+            event(new ComandaParaImprimir($orderWithItems->id, $printData));
+        }
         return response()->json($orderWithItems, 201);
     }
 
@@ -132,11 +166,12 @@ class OrderController extends Controller
      * Display the specified resource.
      */
     // Mostrar un pedido específico (con productos)
-    public function show($id)
-    {
-        $order = Order::with(['items.product'])->findOrFail($id);
-        return response()->json($order);
-    }
+    
+            public function show($id)
+            {
+                $order = Order::with(['items.product', 'user'])->findOrFail($id);
+                return response()->json($order);
+            }
 
     /**
      * Update the specified resource in storage.
@@ -147,13 +182,26 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $validated = $request->validate([
             'notes' => 'nullable|string',
-            'status' => 'sometimes|required|in:activo,cerrado,cancelado',
+            'status' => 'sometimes|required|in:activo,por_cobrar,cerrado,cancelado',
             'client_name' => 'nullable|string',
             'delivery_location' => 'nullable|string',
         ]);
         $order->update($validated);
-        $orderWithItems = $order->load(['items.product']);
+        $order->refresh(); // Asegura que el status esté actualizado
+        $orderWithItems = $order->load(['items.product', 'user']);
         event(new OrderActualizada($orderWithItems));
+
+        // Emitir evento MesaActualizada si la orden es de mesa y cambia a por_cobrar o cerrado
+        if ($order->type === 'mesa' && $order->table_id && isset($validated['status'])) {
+            if (in_array($validated['status'], ['por_cobrar', 'cerrado', 'cancelado', 'activo'])) {
+                $mesa = \App\Models\Table::find($order->table_id);
+                if ($mesa) {
+                    \Illuminate\Support\Facades\Log::info('Llamando a event MesaActualizada desde update', ['mesa_id' => $mesa->id, 'mesa_name' => $mesa->name, 'nuevo_estado_orden' => $validated['status']]);
+                    event(new \App\Events\MesaActualizada($mesa));
+                }
+            }
+        }
+
         return response()->json($orderWithItems);
     }
 
@@ -166,7 +214,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $order->status = 'cancelado';
         $order->save();
-        $orderWithItems = $order->load(['items.product']);
+        $orderWithItems = $order->load(['items.product', 'user']);
         event(new OrderActualizada($orderWithItems));
         // Emitir evento MesaActualizada si el pedido era de mesa
         if ($order->type === 'mesa' && $order->table_id) {

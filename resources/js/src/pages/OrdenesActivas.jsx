@@ -3,8 +3,10 @@ import echo from '../echo';
 import ModalOrdenDetalle from '../components/ModalOrdenDetalle';
 import PedidoItemsList from '../components/pedidos/PedidoItemsList';
 import styles from '../components/pedidos/NuevoPedido.module.css';
-import { listarImpresoras, vistaPreviaTicket } from '../helpers/printTicket';
+import { listarImpresoras, vistaPreviaTicketVenta, printTicketVenta } from '../helpers/printTicket';
+import ModalVistaPreviaTicket from '../components/ModalVistaPreviaTicket';
 import axios from '../axiosConfig';
+
 
 function OrdenesActivas() {
   const [ordenes, setOrdenes] = useState([]);
@@ -14,6 +16,13 @@ function OrdenesActivas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [ordenDetalle, setOrdenDetalle] = useState(null);
   const [expandida, setExpandida] = useState(null); // id de la orden expandida
+  // Modal de vista previa ticket/comanda
+  const [modalVistaPreviaOpen, setModalVistaPreviaOpen] = useState(false);
+  const [modalVistaPreviaData, setModalVistaPreviaData] = useState(null);
+  const [modalVistaPreviaTipo, setModalVistaPreviaTipo] = useState('ticket');
+
+  // Obtener usuario actual
+  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -35,13 +44,10 @@ function OrdenesActivas() {
     };
     fetchOrdenes();
 
-    // Suscripción realtime
+    // Suscripción realtime para órdenes activas (actualización de lista)
     const channel = echo.channel('orders')
       .listen('OrderActualizada', (e) => {
-        console.log('Evento OrderActualizada recibido', e);
-        // Actualización instantánea de la orden afectada
         setOrdenes(prevOrdenes => {
-          // Si la orden ya existe, reemplázala; si no, agrégala
           const idx = prevOrdenes.findIndex(o => o.id === e.order.id);
           if (idx !== -1) {
             const nuevaLista = [...prevOrdenes];
@@ -51,55 +57,101 @@ function OrdenesActivas() {
             return [e.order, ...prevOrdenes];
           }
         });
-        // Sincronizar todo en segundo plano para máxima consistencia
         setTimeout(fetchOrdenes, 500);
       });
+
+    // Suscripción SOLO para cocina: impresión automática
+    let channelCocina;
+    if (usuario && usuario.role === 'cocina') {
+      channelCocina = echo.channel('impresion-cocina')
+        .listen('ComandaParaImprimir', async (e) => {
+          try {
+            let printData = e.printData.pedido || e.printData;
+            if (printData.tipo && !printData.type) {
+              printData = { ...printData, type: printData.tipo };
+            }
+            window.vistaPreviaTicket(printData, 'comanda'); // SOLO para cocina: sigue usando la función de comanda
+            await window.printTicket(printData, 'comanda');
+          } catch (err) {
+            alert('No se pudo imprimir la comanda automáticamente.');
+          }
+        });
+    }
     return () => {
       channel.stopListening('OrderActualizada');
+      if (channelCocina) channelCocina.stopListening('ComandaParaImprimir');
     };
   }, [mostrarHistoricos]);
 
   return (
-    <div className={styles.formContainer}>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <button onClick={listarImpresoras} style={{ background: '#ffd203', color: '#010001', fontWeight: 700, border: 'none', borderRadius: 8, padding: '0.5rem 1.1rem', cursor: 'pointer' }}>Ver impresoras disponibles</button>
-        <button onClick={() => {
-          // Ejemplo de datos de prueba para la vista previa
-          const ejemplo = {
-            mesa: '1',
-            usuario: 'Admin',
-            fecha: new Date().toLocaleString(),
-            productos: [
-              { cantidad: 2, nombre: 'Parrilla', subtotal: 120 },
-              { cantidad: 1, nombre: 'Bebida', subtotal: 20, nota: 'Sin hielo' }
-            ],
-            total: 140
-          };
-          vistaPreviaTicket(ejemplo, 'ticket');
-        }} style={{ background: '#232323', color: '#ffd203', fontWeight: 700, border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', cursor: 'pointer' }}>
-          Vista previa ticket
-        </button>
-      </div>
-      <div className={styles.pedidoInner}>
-        <div className={styles.pedidoColProductos} style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h2 className={styles.titulo} style={{ textAlign: 'center' }}>Órdenes {mostrarHistoricos ? 'Históricas' : 'Activas'}</h2>
-          <button
-            style={{ marginBottom: 18, background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.4rem 1.1rem', fontWeight: 700, cursor: 'pointer', alignSelf: 'center' }}
-            onClick={() => setMostrarHistoricos(h => !h)}
-          >
-            {mostrarHistoricos ? 'Ver solo activas' : 'Ver históricos'}
+    <div style={{ 
+      height: '100%', 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      padding: '24px',
+      boxSizing: 'border-box',
+      minHeight: 0,
+      overflow: 'hidden'
+    }}>
+      <div style={{ flexShrink: 0, marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <button onClick={listarImpresoras} style={{ background: '#ffd203', color: '#010001', fontWeight: 700, border: 'none', borderRadius: 8, padding: '0.5rem 1.1rem', cursor: 'pointer' }}>Ver impresoras disponibles</button>
+          <button onClick={() => {
+            // Ejemplo de datos de prueba para la vista previa
+            const ejemplo = {
+              mesa: '1',
+              usuario: { name: 'Admin' },
+              fecha: new Date().toLocaleString(),
+              productos: [
+                { cantidad: 2, nombre: 'Parrilla', subtotal: 120 },
+                { cantidad: 1, nombre: 'Bebida', subtotal: 20, nota: 'Sin hielo' }
+              ],
+              total: 140
+            };
+            setModalVistaPreviaData(ejemplo);
+            setModalVistaPreviaTipo('ticket');
+            setModalVistaPreviaOpen(true);
+          }} style={{ background: '#232323', color: '#ffd203', fontWeight: 700, border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', cursor: 'pointer' }}>
+            Vista previa ticket
           </button>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', width: '100%' }}>
-            {loading ? (
-              <div style={{ color: '#ffd203', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>Cargando órdenes...</div>
-            ) : error ? (
-              <div style={{ color: 'red', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>{error}</div>
-            ) : ordenes.length === 0 ? (
-              <div style={{ color: '#ffd203', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>
-                No hay órdenes activas.
-              </div>
-            ) : (
-              ordenes.map(orden => {
+        </div>
+      </div>
+      <div style={{ 
+        flex: 1, 
+        minHeight: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center',
+        maxWidth: '100%'
+      }}>
+        <h2 className={styles.titulo} style={{ textAlign: 'center' }}>Órdenes {mostrarHistoricos ? 'Históricas' : 'Activas'}</h2>
+        <button
+          style={{ marginBottom: 18, background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.4rem 1.1rem', fontWeight: 700, cursor: 'pointer', alignSelf: 'center' }}
+          onClick={() => setMostrarHistoricos(h => !h)}
+        >
+          {mostrarHistoricos ? 'Ver solo activas' : 'Ver históricos'}
+        </button>
+        <div style={{ 
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          width: '100%',
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 18, 
+          alignItems: 'center'
+        }}>
+          {loading ? (
+            <div style={{ color: '#ffd203', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>Cargando órdenes...</div>
+          ) : error ? (
+            <div style={{ color: 'red', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>{error}</div>
+          ) : ordenes.length === 0 ? (
+            <div style={{ color: '#ffd203', fontWeight: 700, fontSize: '1.2rem', marginTop: 32 }}>
+              No hay órdenes activas.
+            </div>
+          ) : (
+            ordenes.map(orden => {
                 const esHistorico = orden.status !== 'activo';
                 const expandidaEsta = expandida === orden.id;
                 return (
@@ -185,8 +237,13 @@ function OrdenesActivas() {
                                 e.stopPropagation();
                                 try {
                                   const res = await axios.get(`/api/orders/${orden.id}/print-data`);
-                                  const printData = res.data.pedido || res.data;
-                                  await window.printTicket(printData, 'ticket');
+                                  let printData = res.data.pedido || res.data;
+                                  if (printData.tipo && !printData.type) {
+                                    printData = { ...printData, type: printData.tipo };
+                                  }
+                                  // Mostrar vista previa antes de imprimir
+                                  vistaPreviaTicketVenta(printData);
+                                  await printTicketVenta(printData);
                                 } catch (err) {
                                   alert('No se pudo imprimir el ticket.');
                                 }
@@ -199,8 +256,14 @@ function OrdenesActivas() {
                               e.stopPropagation();
                               try {
                                 const res = await axios.get(`/api/orders/${orden.id}/print-data`);
-                                const printData = res.data.pedido || res.data;
-                                window.vistaPreviaTicket(printData, 'ticket');
+                                let printData = res.data.pedido || res.data;
+                                if (printData.tipo && !printData.type) {
+                                  printData = { ...printData, type: printData.tipo };
+                                }
+                                // Usar vista previa de ticket de venta tradicional
+                                // DEBUG: Forzar log para ver qué función se está llamando y cómo llegan los datos
+                                console.log('DEBUG vistaPreviaTicketVenta', printData);
+                                vistaPreviaTicketVenta(printData);
                               } catch (err) {
                                 alert('No se pudo mostrar la vista previa.');
                               }
@@ -213,12 +276,9 @@ function OrdenesActivas() {
                 );
               })
             )}
-          </div>
-        </div>
-        <div className={styles.pedidoColOpciones}>
-          {/* Aquí se mostrarán detalles, acciones rápidas, etc. */}
         </div>
       </div>
+    
       <ModalOrdenDetalle open={modalOpen} onClose={() => setModalOpen(false)}>
         {ordenDetalle && (
           <>
@@ -244,6 +304,12 @@ function OrdenesActivas() {
           </>
         )}
       </ModalOrdenDetalle>
+      <ModalVistaPreviaTicket
+        open={modalVistaPreviaOpen}
+        onClose={() => setModalVistaPreviaOpen(false)}
+        ticketData={modalVistaPreviaData}
+        tipo={modalVistaPreviaTipo}
+      />
     </div>
   );
 }

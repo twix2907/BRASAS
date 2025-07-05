@@ -1,27 +1,32 @@
 export const STYLES = {
   container: {
-    position: 'fixed',
-    inset: 0,
-    width: '100vw',
-    height: '100vh',
-    background: '#222',
-    zIndex: 0,
+    height: '100%',
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '24px',
+    boxSizing: 'border-box',
+    minHeight: 0,
+    overflow: 'hidden'
   },
   
   content: {
-    position: 'relative',
+    flex: 1,
     width: '100%',
-    minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    zIndex: 1,
+    minHeight: 0,
+    overflow: 'hidden'
   },
 
   title: {
     color: '#ffd203',
     marginBottom: 24,
+    fontSize: '2rem',
+    textAlign: 'center',
+    flexShrink: 0
   },
 
   form: {
@@ -29,6 +34,7 @@ export const STYLES = {
     display: 'flex',
     gap: 12,
     alignItems: 'center',
+    flexShrink: 0
   },
 
   input: {
@@ -52,10 +58,10 @@ export const STYLES = {
   },
 
   mesasGrid: {
+    flex: 1,
     display: 'flex',
     flexWrap: 'wrap',
     gap: '1.5rem',
-    marginTop: 24,
     width: '100%',
     maxWidth: 1400,
     marginLeft: 'auto',
@@ -63,8 +69,9 @@ export const STYLES = {
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     overflowY: 'auto',
-    maxHeight: 'calc(100vh - 220px)', // Ajusta según el alto del header/formulario
+    minHeight: 0,
     paddingBottom: 24,
+    boxSizing: 'border-box'
   },
 
   toast: {
@@ -83,10 +90,11 @@ export const STYLES = {
   },
 
   loadingContainer: {
+    flex: 1,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '50vh',
+    minHeight: 0
   },
 
   loadingText: {

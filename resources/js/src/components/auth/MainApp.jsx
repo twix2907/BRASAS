@@ -1,9 +1,11 @@
 // components/auth/MainApp.jsx
 // Componente principal que maneja el flujo completo de autenticación
 
+
 import React, { useState, useEffect } from 'react';
 import AdminGateway from './AdminGateway';
 import Login from '../../pages/Login';
+import LayoutBase from '../LayoutBase';
 
 const MainApp = ({ children }) => {
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
@@ -55,11 +57,18 @@ const MainApp = ({ children }) => {
     );
   }
 
-  // Si ambos están autenticados, mostrar la aplicación principal
+  // Si ambos están autenticados, mostrar la aplicación principal con LayoutBase
+  // Obtener usuario autenticado de localStorage
+  let usuario = null;
+  try {
+    usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+  } catch (e) {
+    usuario = null;
+  }
   return (
-    <div>
+    <LayoutBase user={usuario}>
       {children}
-    </div>
+    </LayoutBase>
   );
 };
 

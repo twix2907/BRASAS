@@ -83,7 +83,7 @@ class UserController extends Controller
             'name' => 'required|string|max:100',
             'username' => 'required|string|max:50|unique:users,username',
             'pin' => 'required|digits:4',
-            'role' => 'required|in:admin,mesero,cajero',
+            'role' => 'required|in:admin,mesero,cajero,cocina',
         ]);
         $validated['active'] = true;
         $user = User::create($validated);
@@ -107,7 +107,7 @@ class UserController extends Controller
             'name' => 'sometimes|required|string|max:100',
             'username' => 'sometimes|required|string|max:50|unique:users,username,' . $user->id,
             'pin' => 'sometimes|required|digits:4',
-            'role' => 'sometimes|required|in:admin,mesero,cajero',
+            'role' => 'sometimes|required|in:admin,mesero,cajero,cocina',
             'active' => 'sometimes|boolean',
         ]);
         $user->update($validated);

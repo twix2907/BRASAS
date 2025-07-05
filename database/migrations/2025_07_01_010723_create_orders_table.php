@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('table_id')->nullable()->constrained('tables'); // Mesa (nullable para delivery/para llevar)
             $table->foreignId('user_id')->constrained('users'); // Usuario que crea el pedido
             $table->enum('type', ['mesa', 'para_llevar', 'delivery']); // Tipo de pedido
-            $table->enum('status', ['activo', 'cerrado', 'cancelado'])->default('activo'); // Estado del pedido
+            $table->enum('status', ['activo', 'por_cobrar', 'cerrado', 'cancelado'])->default('activo'); // Estado del pedido
             $table->decimal('total', 8, 2)->default(0); // Total del pedido
             $table->string('notes')->nullable(); // Notas generales
             $table->timestamps();

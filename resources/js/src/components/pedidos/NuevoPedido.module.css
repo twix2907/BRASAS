@@ -232,14 +232,14 @@
   font-size: 1rem;
   font-weight: 600;
 }
-/* Contenedor principal: ocupa toda la pantalla, sin animaciones */
+/* Contenedor principal: se adapta al contenedor padre del layout */
 .formContainer {
   background: #181818;
   padding: 0;
   border-radius: 0;
   margin: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   box-shadow: none;
@@ -260,17 +260,17 @@
 
 /* Contenedor interior: ocupa todo el espacio, sin animaciones, distribución flexible */
 /* Layout principal: dos mitades, izquierda productos, derecha opciones */
-/* Layout principal: dos mitades, 100vh y sin cortes */
+/* Layout principal: se adapta al contenedor padre del layout */
 .pedidoInner {
   background: #232323;
   border-radius: 0;
   box-shadow: none;
   padding: 0;
   min-width: 0;
-  max-width: 100vw;
-  width: 100vw;
+  max-width: 100%;
+  width: 100%;
   min-height: 0;
-  height: 100dvh;
+  height: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
@@ -283,7 +283,7 @@
   .pedidoInner {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    min-height: 100vh;
+    min-height: 100%;
     height: auto;
   }
 }

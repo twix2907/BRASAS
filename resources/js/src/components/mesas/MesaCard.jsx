@@ -16,6 +16,7 @@ const MesaCard = ({
   onCancelEdit,
   setEditState,
   esAdmin = false,
+  esMesero = false,
 }) => {
   const ocupada = !!ordenActiva;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,11 +51,29 @@ const MesaCard = ({
   const handleOcupacion = () => { setMenuOpen(false); onOcupacionChange(mesa, ordenActiva); };
   const handleDelete = () => { setMenuOpen(false); onDelete(mesa); };
 
-  // Color de tarjeta original (sin cambio por cantidad de personas)
+  // Color de tarjeta según estado de la orden
+  let cardBg = '#232323';
+  let cardColor = '#ffd203';
+  let cardBorder = '2px solid #ffd203';
+  if (!mesa.active) {
+    cardBg = '#444';
+    cardColor = '#aaa';
+    cardBorder = '2px solid #888';
+  } else if (ocupada && ordenActiva) {
+    if (ordenActiva.status === 'por_cobrar') {
+      cardBg = 'rgba(255, 210, 3, 0.22)'; // Amarillo translúcido
+      cardColor = '#ffd203';
+      cardBorder = '2.5px solid #ffd203';
+    } else {
+      cardBg = '#3a1818';
+      cardColor = '#ff4d4f';
+      cardBorder = '2.5px solid #ff4d4f';
+    }
+  }
   const cardStyle = {
-    background: !mesa.active ? '#444' : ocupada ? '#3a1818' : '#232323',
-    color: !mesa.active ? '#aaa' : ocupada ? '#ff4d4f' : '#ffd203',
-    border: ocupada ? '2.5px solid #ff4d4f' : '2px solid #ffd203',
+    background: cardBg,
+    color: cardColor,
+    border: cardBorder,
     borderRadius: 18,
     boxShadow: '0 2px 12px 0 rgba(0,0,0,0.10)',
     opacity: mesa.active ? 1 : 0.6,
@@ -127,34 +146,37 @@ const MesaCard = ({
   return (
     <div style={cardStyle} title={ocupada ? 'Ocupada: hay una orden activa' : 'Libre'} onClick={handleCardClick}>
       {/* Botón de menú (3 puntitos) */}
-      <button
-        className="mesa-menu-btn"
-        style={menuBtnStyle}
-        onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
-        aria-label="Opciones de mesa"
-      >
-        &#8942;
-      </button>
-      {menuOpen && (
-        <div ref={menuRef} style={menuStyle} onClick={e => e.stopPropagation()}>
-          <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleEdit(); }}>Editar</button>
-          {mesa.active && (
-            <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleOcupacion(); }}>{ocupada ? 'Marcar libre' : 'Marcar ocupada'}</button>
+      {/* Botón de menú (3 puntitos) solo para admin */}
+      {esAdmin && (
+        <>
+          <button
+            className="mesa-menu-btn"
+            style={menuBtnStyle}
+            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
+            aria-label="Opciones de mesa"
+          >
+            &#8942;
+          </button>
+          {menuOpen && (
+            <div ref={menuRef} style={menuStyle} onClick={e => e.stopPropagation()}>
+              <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleEdit(); }}>Editar</button>
+              {mesa.active && (
+                <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleOcupacion(); }}>{ocupada ? 'Marcar libre' : 'Marcar ocupada'}</button>
+              )}
+              <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleToggleStatus(); }}>{mesa.active ? 'Inhabilitar' : 'Reactivar'}</button>
+              <button 
+                style={{
+                  ...menuItemStyle,
+                  color: '#ff4444',
+                  borderTop: '1px solid #333'
+                }} 
+                onClick={e => { e.stopPropagation(); handleDelete(); }}
+              >
+                🗑️ Eliminar
+              </button>
+            </div>
           )}
-          <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleToggleStatus(); }}>{mesa.active ? 'Inhabilitar' : 'Reactivar'}</button>
-          {esAdmin && (
-            <button 
-              style={{
-                ...menuItemStyle,
-                color: '#ff4444',
-                borderTop: '1px solid #333'
-              }} 
-              onClick={e => { e.stopPropagation(); handleDelete(); }}
-            >
-              🗑️ Eliminar
-            </button>
-          )}
-        </div>
+        </>
       )}
       {/* Cantidad de personas en la esquina superior izquierda */}
       <span style={{
@@ -244,11 +266,15 @@ const MesaCard = ({
           Crear pedido
         </button>
       ) : null}
-      <div style={{ fontSize: 13, color: ocupada ? '#ff4d4f' : '#fff', fontWeight: 700, marginBottom: 2 }}>
-        {!mesa.active ? 'Inhabilitada' : ocupada ? 'Ocupada' : 'Libre'}
+      {/* Estado textual de la mesa */}
+      <div style={{ fontSize: 13, color: ocupada ? (ordenActiva && ordenActiva.status === 'por_cobrar' ? '#ffd203' : '#ff4d4f') : '#fff', fontWeight: 700, marginBottom: 2 }}>
+        {!mesa.active ? 'Inhabilitada' : ocupada ? (ordenActiva && ordenActiva.status === 'por_cobrar' ? '' : 'Ocupada') : 'Libre'}
       </div>
+      {/* Indicador de estado solo si hay orden activa */}
       {ocupada && (
-        <span style={{ fontSize: 13, color: '#ff4d4f', fontWeight: 700 }}>● Orden activa</span>
+        <span style={{ fontSize: 13, color: ordenActiva && ordenActiva.status === 'por_cobrar' ? '#ffd203' : '#ff4d4f', fontWeight: 700 }}>
+          ● {ordenActiva && ordenActiva.status === 'por_cobrar' ? 'Por cobrar' : 'Orden activa'}
+        </span>
       )}
     </div>
   );

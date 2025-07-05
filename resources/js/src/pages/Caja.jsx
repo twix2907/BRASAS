@@ -75,7 +75,16 @@ export default function Caja() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#010001', color: '#ffd203', fontFamily: 'Roboto, Nunito Sans, Arial', overflow: 'hidden' }}>
+    <div style={{ 
+      display: 'flex', 
+      height: '100%', 
+      width: '100%',
+      background: '#010001', 
+      color: '#ffd203', 
+      fontFamily: 'Roboto, Nunito Sans, Arial', 
+      overflow: 'hidden',
+      boxSizing: 'border-box'
+    }}>
       {/* Lista de pedidos */}
       <div style={{ width: 380, background: '#232323', padding: 0, borderRight: '2px solid #ffd203', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 24, borderBottom: '2px solid #ffd203', background: '#232323' }}>
