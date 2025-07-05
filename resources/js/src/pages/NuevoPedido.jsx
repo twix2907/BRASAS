@@ -4,10 +4,12 @@ import axios from '../axiosConfig';
 import { useOrdenesActivas } from '../hooks/useOrdenesActivas';
 import { useMesas } from '../hooks/useMesas';
 import { useProductos } from '../hooks/useProductos';
-import MesaSelect from '../components/pedidos/MesaSelect';
-import ProductoListaSelector from '../components/pedidos/ProductoListaSelector';
-import CantidadNotas from '../components/pedidos/CantidadNotas';
-import PedidoItemsList from '../components/pedidos/PedidoItemsList';
+
+import ProductosGrid from '../components/pedidos/ProductosGrid';
+import CantidadNotasAgregar from '../components/pedidos/CantidadNotasAgregar';
+import PedidoTipoForm from '../components/pedidos/PedidoTipoForm';
+import PedidoItemsListPedido from '../components/pedidos/PedidoItemsListPedido';
+import ProductoDetalles from '../components/pedidos/ProductoDetalles';
 import styles from '../components/pedidos/NuevoPedido.module.css';
 import { pedidoTexts } from './pedidoTexts';
 import { printTicket } from '../helpers/printTicket';
@@ -147,101 +149,143 @@ function NuevoPedido({ onPedidoCreado }) {
     }
   };
 
+  // Layout 3 columnas: productos | cantidad/notas/agregar | tipo de pedido + lista
   return (
     <>
       {showToast && (
         <div className={styles.toastConfirm}>{successMsg || pedidoTexts.pedidoExito}</div>
       )}
       <div className={styles.formContainer}>
-        <div className={styles.pedidoInner}>
-          {/* Columna izquierda: productos */}
-          <div className={styles.pedidoColProductos}>
-            <h2 className={styles.titulo}>Nuevo Pedido</h2>
-            <div className={styles.buscadorProductos}>
-              <ProductoListaSelector
-                productos={productos}
-                value={productoId}
-                onChange={e => setProductoId(e.target.value)}
-                error={productosError}
-                loading={loadingProductos}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1.2fr 0.9fr 1.3fr',
+          gap: 0,
+          width: '100vw',
+          height: '100vh',
+          background: '#232323',
+          alignItems: 'stretch',
+          justifyItems: 'stretch',
+          overflow: 'hidden',
+        }}>
+          {/* Columna 1: ProductosGrid (solo buscador y matriz, solo la matriz scrollable) */}
+          <div style={{
+            borderRight: '2px solid #181818',
+            padding: '2.5rem 1.2rem 2.5rem 3.5rem',
+            minWidth: 0,
+            minHeight: 0,
+            height: '100vh',
+            background: '#232323',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'stretch',
+            boxSizing: 'border-box',
+            overflow: 'hidden'
+          }}>
+            <ProductosGrid
+              productos={productos}
+              filtro={''}
+              onFiltroChange={() => {}}
+              onSelect={id => setProductoId(id)}
+              productoSeleccionado={productoId}
+              soloMatrizScrollable
+            />
+          </div>
+          {/* Columna 2: CantidadNotasAgregar */}
+          <div style={{
+            padding: '2.5rem 1.2rem',
+            minWidth: 0,
+            minHeight: 0,
+            height: '100vh',
+            background: '#232323',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+            maxWidth: '100%'
+          }}>
+            {/* Sección 1: Detalles del producto seleccionado */}
+            <div style={{ flexShrink: 0, marginBottom: 18 }}>
+              <ProductoDetalles 
+                producto={productoId ? productos.find(p => p.id === parseInt(productoId)) : null}
+              />
+            </div>
+            
+            {/* Sección 2: Cantidad, notas y agregar */}
+            <div style={{ flexShrink: 0 }}>
+              <CantidadNotasAgregar
+                cantidad={cantidad}
+                setCantidad={setCantidad}
+                nota={nota}
+                setNota={setNota}
+                onAgregar={agregarItem}
+                productoSeleccionado={productoId}
+                showAgregado={showAgregado}
+                ajustarBotones
               />
             </div>
           </div>
-          {/* Columna derecha: opciones y acciones */}
-          <div className={styles.pedidoColOpciones}>
-            <form onSubmit={handleSubmit} autoComplete="off" style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
-              <div className={styles.pedidoOpcionesArriba}>
-                <div className={styles.tipoMesaRow}>
-                  <label htmlFor="tipo-select">{pedidoTexts.tipo}:&nbsp;</label>
-                  <select
-                    id="tipo-select"
-                    value={tipo}
-                    onChange={e => setTipo(e.target.value)}
-                    className={styles.selectPedido}
-                  >
-                    <option value="mesa">Mesa</option>
-                    <option value="para_llevar">Para llevar</option>
-                    <option value="delivery">Delivery</option>
-                  </select>
-                  {tipo === 'mesa' && (
-                    <MesaSelect
-                      mesas={mesas}
-                      value={mesaId}
-                      onChange={e => setMesaId(e.target.value)}
-                      error={mesasError || (error === pedidoTexts.mesaObligatoria ? error : '')}
-                      loading={loadingMesas}
-                      selectClassName={styles.selectPedido}
-                    />
-                  )}
-                </div>
-                {tipo === 'delivery' && (
-                  <div style={{ margin: '12px 0 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <label style={{ color: '#ffd203', fontWeight: 600 }} htmlFor="client-name">Nombre del cliente:</label>
-                    <input
-                      id="client-name"
-                      type="text"
-                      value={clientName}
-                      onChange={e => setClientName(e.target.value)}
-                      required
-                      placeholder="Nombre de quien recibe"
-                      style={{ padding: '0.5rem', borderRadius: 6, border: '1px solid #ffd203', fontSize: 16, background: '#181818', color: '#ffd203' }}
-                    />
-                    <label style={{ color: '#ffd203', fontWeight: 600 }} htmlFor="delivery-location">Ubicación para delivery:</label>
-                    <input
-                      id="delivery-location"
-                      type="text"
-                      value={deliveryLocation}
-                      onChange={e => setDeliveryLocation(e.target.value)}
-                      required
-                      placeholder="Dirección o referencia"
-                      style={{ padding: '0.5rem', borderRadius: 6, border: '1px solid #ffd203', fontSize: 16, background: '#181818', color: '#ffd203' }}
-                    />
-                  </div>
-                )}
-                <div className={styles.cantidadNotasCol}>
-                  <CantidadNotas cantidad={cantidad} setCantidad={setCantidad} nota={nota} setNota={setNota} notaMax={notaMax} />
-                </div>
-                <div className={styles.pedidoItemsList}>
-                  <PedidoItemsList items={items} quitarItem={quitarItem} productos={productos} />
-                </div>
-                {/* El toast flotante ya muestra el mensaje de éxito */}
-              </div>
-              <div className={styles.pedidoOpcionesAbajo}>
-                <button
-                  type="button"
-                  onClick={agregarItem}
-                  style={{ background: (!productoId || cantidad < 1 || cantidad === '' || !Number.isInteger(Number(cantidad))) ? '#aaa' : '#ffd203', color: '#010001', border: 'none', borderRadius: 6, padding: '0.7rem 1.2rem', fontWeight: 700, cursor: (!productoId || cantidad < 1 || cantidad === '' || !Number.isInteger(Number(cantidad))) ? 'not-allowed' : 'pointer', opacity: (!productoId || cantidad < 1 || cantidad === '' || !Number.isInteger(Number(cantidad))) ? 0.7 : 1, fontSize: 18, width: '100%' }}
-                  disabled={!productoId || cantidad < 1 || cantidad === '' || !Number.isInteger(Number(cantidad))}
-                >
-                  {pedidoTexts.agregar}
-                </button>
-                {showAgregado && (
-                  <span style={{ color: '#4caf50', fontWeight: 600, transition: 'opacity 0.3s', fontSize: 16, marginTop: 4 }}>¡Producto agregado!</span>
-                )}
-                <button type="submit" disabled={loading || (tipo === 'mesa' && !mesaId) || items.length === 0} className={styles.botonConfirmar}>{pedidoTexts.confirmar}</button>
-                {error && <div className={styles.errorMsg} style={{marginTop: 10}}>{error}</div>}
-              </div>
-            </form>
+          {/* Columna 3: PedidoTipoForm + PedidoItemsListPedido */}
+          <div style={{
+            padding: '2.5rem 3.5rem 0 1.2rem',
+            minWidth: 0,
+            minHeight: 0,
+            height: '100vh',
+            background: '#232323',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            justifyContent: 'flex-start',
+            overflow: 'hidden',
+            boxSizing: 'border-box'
+          }}>
+            {/* Sección 1: Tipo de pedido y datos */}
+            <div style={{ flexShrink: 0, marginBottom: 18 }}>
+              <PedidoTipoForm
+                tipo={tipo}
+                setTipo={setTipo}
+                mesaId={mesaId}
+                setMesaId={setMesaId}
+                mesasLibres={mesas}
+                clientName={clientName}
+                setClientName={setClientName}
+                deliveryLocation={deliveryLocation}
+                setDeliveryLocation={setDeliveryLocation}
+              />
+            </div>
+            {/* Sección 2: Lista de productos agregados, scrollable y flexible */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', marginBottom: 18 }}>
+              <PedidoItemsListPedido
+                items={items}
+                onQuitar={quitarItem}
+                productos={productos}
+              />
+            </div>
+            {/* Sección 3: Botón confirmar, fijo y completo en la parte inferior */}
+            <div style={{ 
+              flexShrink: 0, 
+              background: '#232323', 
+              padding: '24px 0 2.5rem 0', 
+              zIndex: 20, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              boxShadow: '0 -2px 16px 0 rgba(0,0,0,0.10)',
+              position: 'relative'
+            }}>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading || (tipo === 'mesa' && !mesaId) || items.length === 0}
+                className={styles.botonConfirmar}
+                style={{ marginTop: 0, width: '100%', maxWidth: 480 }}
+              >
+                {pedidoTexts.confirmar}
+              </button>
+              {error && <div className={styles.errorMsg} style={{marginTop: 10}}>{error}</div>}
+            </div>
           </div>
         </div>
       </div>
