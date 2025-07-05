@@ -61,12 +61,7 @@ function Root() {
         <Route path="/login" element={
           isAuthenticated()
             ? <Navigate to="/" />
-            : <MainApp>
-                <Login onLogin={(usuario) => {
-                  localStorage.setItem('usuario', JSON.stringify(usuario));
-                  window.location.href = '/';
-                }} />
-              </MainApp>
+            : <MainApp />
         } />
         
         {/* Rutas protegidas - requieren autenticación completa */}

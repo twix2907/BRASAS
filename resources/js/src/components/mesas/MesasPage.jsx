@@ -110,7 +110,7 @@ const MesasPage = () => {
 
   return (
     <div style={STYLES.container}>
-      <BotonPruebaImpresion />
+      {/* <BotonPruebaImpresion /> */}
       <div style={STYLES.content}>
         <h2 style={STYLES.title}>Gestión de Mesas</h2>
         

@@ -37,6 +37,8 @@ const MainApp = ({ children }) => {
   const handleWorkerLogin = (usuario) => {
     localStorage.setItem('usuario', JSON.stringify(usuario));
     setWorkerAuthenticated(true);
+    // Redirigir a la página principal después del login exitoso
+    window.location.href = '/';
   };
 
   // Si el admin no está autenticado, mostrar AdminGateway

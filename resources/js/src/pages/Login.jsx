@@ -37,8 +37,40 @@ export default function Login({ onLogin }) {
     if (value.length <= 4) setPin(value);
   };
 
+  // Utilidad para leer cookies
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  // Espera hasta que la cookie de sesión esté presente
+  async function ensureSessionCookie() {
+    // Primero pide el CSRF
+    await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+      credentials: 'include',
+    });
+    // Si ya está la cookie de sesión, sigue
+    if (getCookie('laravel_session')) return;
+    // Si no, fuerza una petición dummy para crear la sesión
+    await fetch('http://localhost:8000/api/session-status', {
+      credentials: 'include',
+    });
+    // Espera hasta que la cookie esté presente (máx 500ms)
+    let tries = 0;
+    while (!getCookie('laravel_session') && tries < 10) {
+      await new Promise(res => setTimeout(res, 50));
+      tries++;
+    }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    // Forzar blur del input para evitar submit doble por Enter
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+      document.activeElement.blur();
+    }
+    console.log('submit', { pin, isSubmitting, usuarioSeleccionado });
     if (isSubmitting) return;
     if (pin.length !== 4) {
       setError('El PIN debe tener 4 dígitos.');
@@ -47,20 +79,10 @@ export default function Login({ onLogin }) {
     setError('');
     setIsSubmitting(true);
     try {
-      // 1. Solicitar cookie CSRF
-      await fetch('http://localhost:8000/sanctum/csrf-cookie', {
-        credentials: 'include',
-      });
-
-      // 2. Leer el valor de la cookie XSRF-TOKEN
-      function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-      }
+      // 1. Asegura que la cookie de sesión esté presente
+      await ensureSessionCookie();
       const xsrfToken = getCookie('XSRF-TOKEN');
-
-      // 3. Hacer login con el header X-XSRF-TOKEN
+      // 2. Hacer login con el header X-XSRF-TOKEN
       const res = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: {
@@ -70,19 +92,33 @@ export default function Login({ onLogin }) {
         credentials: 'include',
         body: JSON.stringify({ username: usuarioSeleccionado.username, pin })
       });
+      
+      console.log('Response status:', res.status, 'ok:', res.ok);
+      
       if (!res.ok) {
         const data = await res.json();
         setError(data.message || 'PIN incorrecto');
         setIsSubmitting(false);
         return;
       }
-      const user = await res.json();
+      
+      const text = await res.text();
+      console.log('Response text:', text);
+      
+      if (!text) {
+        setError('Respuesta vacía del servidor');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const user = JSON.parse(text);
+      console.log('User parsed:', user);
       onLogin(user);
     } catch (err) {
+      console.error('Login error:', err);
       setError('Error de conexión con el servidor');
       setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -175,12 +211,13 @@ export default function Login({ onLogin }) {
                   value={pin}
                   onChange={handlePinChange}
                   placeholder="PIN de 4 dígitos"
+                  autoFocus
                   style={{ fontSize: '1.5rem', padding: '0.5rem 1rem', borderRadius: '0.7rem', border: '1px solid #ffd203', textAlign: 'center', width: '100%', maxWidth: 220, marginBottom: 0, boxSizing: 'border-box' }}
                 />
                 {/* Aquí iría el input de contraseña y el de código SMS si aplica para admin */}
                 {/* <input ... style={{ width: '100%', maxWidth: 220, ... }} /> */}
               </div>
-              <button type="submit" disabled={isSubmitting} style={{ padding: '0.7rem 2.5rem', borderRadius: '1rem', background: isSubmitting ? '#ffe066' : '#ffd203', color: '#010001', fontWeight: 700, border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', fontSize: '1.1rem', marginTop: 18, width: '100%', maxWidth: 220, opacity: isSubmitting ? 0.7 : 1 }}>Entrar</button>
+              <button type="submit" disabled={isSubmitting || pin.length !== 4} style={{ padding: '0.7rem 2.5rem', borderRadius: '1rem', background: isSubmitting || pin.length !== 4 ? '#ffe066' : '#ffd203', color: '#010001', fontWeight: 700, border: 'none', cursor: isSubmitting || pin.length !== 4 ? 'not-allowed' : 'pointer', fontSize: '1.1rem', marginTop: 18, width: '100%', maxWidth: 220, opacity: isSubmitting || pin.length !== 4 ? 0.7 : 1 }}>Entrar</button>
               {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
             </form>
           )}
