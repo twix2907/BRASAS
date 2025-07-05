@@ -10,4 +10,21 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        outDir: 'public/build',
+        manifest: true,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    utils: ['axios', 'laravel-echo', 'pusher-js']
+                }
+            }
+        },
+        chunkSizeWarningLimit: 1000,
+        sourcemap: false // Disable sourcemaps in production
+    },
+    optimizeDeps: {
+        include: ['react', 'react-dom', 'react-router-dom', 'styled-components']
+    }
 });
