@@ -3,7 +3,7 @@ import axios from '../axiosConfig';
 import { validateMesaName, validatePersonas } from '../utils/mesasValidation';
 
 // Recibe funciones optimistas del hook useMesas
-export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal) => {
+export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal, removeMesaLocal) => {
   const [editState, setEditState] = useState({
     mesaId: null,
     nombre: '',
@@ -122,6 +122,29 @@ export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast, updateMes
     setEditState({ mesaId: null, nombre: '', personas: 0, loading: false });
   }, []);
 
+  const deleteMesa = useCallback(async (mesaId) => {
+    // Si la mesa es solo local (id negativo), elimínala localmente sin llamar a la API
+    if (mesaId < 0) {
+      if (typeof removeMesaLocal === 'function') {
+        removeMesaLocal(mesaId);
+      }
+      showToast('Mesa eliminada localmente');
+      return true;
+    }
+    try {
+      const res = await axios.delete(`/api/mesas/${mesaId}/force-delete`);
+      showToast(res.data.message);
+      if (typeof removeMesaLocal === 'function') {
+        removeMesaLocal(mesaId);
+      }
+      return true;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Error al eliminar la mesa';
+      showToast(errorMessage);
+      return false;
+    }
+  }, [showToast, removeMesaLocal]);
+
   return {
     editState,
     setEditState,
@@ -130,6 +153,7 @@ export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast, updateMes
     toggleMesaStatus,
     handleOcupacionChange,
     startEdit,
-    cancelEdit
+    cancelEdit,
+    deleteMesa
   };
 };

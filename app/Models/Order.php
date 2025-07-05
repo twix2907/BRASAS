@@ -13,6 +13,8 @@ class Order extends Model
         'notes',
         'status',
         'total',
+        'client_name',
+        'delivery_location',
     ];
 
     // Relación: un pedido tiene muchos items

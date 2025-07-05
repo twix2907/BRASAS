@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Http\Request;
@@ -21,6 +20,8 @@ Route::get('/orders/{id}/print-data', [OrderController::class, 'printData']);
 Route::apiResource('productos', ProductController::class);
 // Rutas CRUD de mesas (apiResource)
 Route::apiResource('mesas', TableController::class);
+// Ruta adicional para eliminación física de mesas
+Route::delete('/mesas/{id}/force-delete', [TableController::class, 'forceDelete']);
 // Rutas CRUD de pedidos (apiResource)
 Route::apiResource('orders', OrderController::class);
 

@@ -62,6 +62,9 @@ export const STYLES = {
     marginRight: 'auto',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    overflowY: 'auto',
+    maxHeight: 'calc(100vh - 220px)', // Ajusta según el alto del header/formulario
+    paddingBottom: 24,
   },
 
   toast: {

@@ -86,4 +86,30 @@ class TableController extends Controller
         event(new MesaActualizada($table));
         return response()->json(['message' => 'Mesa inhabilitada']);
     }
+
+    /**
+     * Force delete the specified resource from storage.
+     * Solo permite eliminar mesas sin pedidos (ni activos ni históricos)
+     */
+    public function forceDelete($id)
+    {
+        $table = Table::findOrFail($id);
+        
+        // Verificar que no tenga pedidos (ni activos ni históricos)
+        $pedidosCount = \App\Models\Order::where('table_id', $id)->count();
+        
+        if ($pedidosCount > 0) {
+            return response()->json([
+                'message' => 'No se puede eliminar la mesa porque tiene pedidos asociados (activos o históricos)'
+            ], 422);
+        }
+        
+        // Eliminar físicamente
+        $mesaNombre = $table->name;
+        $table->delete();
+        
+        return response()->json([
+            'message' => "Mesa '{$mesaNombre}' eliminada permanentemente"
+        ]);
+    }
 }

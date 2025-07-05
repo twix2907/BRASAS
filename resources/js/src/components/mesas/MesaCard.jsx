@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import mesaImg from '../../assets/mesas/mesa.svg';
 import MesaEditForm from './MesaEditForm';
@@ -10,11 +9,13 @@ const MesaCard = ({
   onEdit,
   onToggleStatus,
   onOcupacionChange,
+  onDelete,
   isEditing,
   editState,
   onSaveEdit,
   onCancelEdit,
   setEditState,
+  esAdmin = false,
 }) => {
   const ocupada = !!ordenActiva;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,6 +48,7 @@ const MesaCard = ({
   const handleEdit = () => { setMenuOpen(false); onEdit(mesa); };
   const handleToggleStatus = () => { setMenuOpen(false); onToggleStatus(mesa); };
   const handleOcupacion = () => { setMenuOpen(false); onOcupacionChange(mesa, ordenActiva); };
+  const handleDelete = () => { setMenuOpen(false); onDelete(mesa); };
 
   // Color de tarjeta original (sin cambio por cantidad de personas)
   const cardStyle = {
@@ -134,12 +136,24 @@ const MesaCard = ({
         &#8942;
       </button>
       {menuOpen && (
-        <div ref={menuRef} style={menuStyle}>
-          <button style={menuItemStyle} onClick={handleEdit}>Editar</button>
+        <div ref={menuRef} style={menuStyle} onClick={e => e.stopPropagation()}>
+          <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleEdit(); }}>Editar</button>
           {mesa.active && (
-            <button style={menuItemStyle} onClick={handleOcupacion}>{ocupada ? 'Marcar libre' : 'Marcar ocupada'}</button>
+            <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleOcupacion(); }}>{ocupada ? 'Marcar libre' : 'Marcar ocupada'}</button>
           )}
-          <button style={menuItemStyle} onClick={handleToggleStatus}>{mesa.active ? 'Inhabilitar' : 'Reactivar'}</button>
+          <button style={menuItemStyle} onClick={e => { e.stopPropagation(); handleToggleStatus(); }}>{mesa.active ? 'Inhabilitar' : 'Reactivar'}</button>
+          {esAdmin && (
+            <button 
+              style={{
+                ...menuItemStyle,
+                color: '#ff4444',
+                borderTop: '1px solid #333'
+              }} 
+              onClick={e => { e.stopPropagation(); handleDelete(); }}
+            >
+              🗑️ Eliminar
+            </button>
+          )}
         </div>
       )}
       {/* Cantidad de personas en la esquina superior izquierda */}

@@ -15,7 +15,7 @@ class OrderController extends Controller
      */
     public function printData($id)
     {
-        $order = Order::with(['items.product'])->findOrFail($id);
+        $order = Order::with(['items.product', 'user'])->findOrFail($id);
         $logoUrl = asset('images/logo.png'); // Asegúrate de tener el logo en public/images/logo.png
         $data = [
             'restaurante' => [
@@ -27,7 +27,7 @@ class OrderController extends Controller
                 'id' => $order->id,
                 'tipo' => $order->type,
                 'mesa' => $order->table_id,
-                'usuario' => $order->user_id,
+                'usuario' => $order->user ? ['id' => $order->user->id, 'name' => $order->user->name] : null,
                 'fecha' => $order->created_at ? $order->created_at->format('Y-m-d H:i') : null,
                 'productos' => $order->items->map(function($item) {
                     return [
@@ -39,6 +39,8 @@ class OrderController extends Controller
                 }),
                 'total' => $order->total,
                 'notas' => $order->notes,
+                'client_name' => $order->client_name,
+                'delivery_location' => $order->delivery_location,
             ]
         ];
         return response()->json($data);
@@ -50,7 +52,7 @@ class OrderController extends Controller
     public function index()
     {
         // Cargar pedidos con items y producto asociado a cada item
-        $orders = Order::with(['items.product'])->get();
+        $orders = Order::with(['items.product', 'user'])->get();
         return response()->json($orders);
     }
 
@@ -71,6 +73,8 @@ class OrderController extends Controller
             'user_id' => 'required|exists:users,id',
             'type' => 'required|in:mesa,para_llevar,delivery',
             'notes' => 'nullable|string',
+            'client_name' => 'required_if:type,delivery|nullable|string',
+            'delivery_location' => 'required_if:type,delivery|nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -94,6 +98,8 @@ class OrderController extends Controller
             'user_id' => $validated['user_id'],
             'type' => $validated['type'],
             'notes' => $validated['notes'] ?? null,
+            'client_name' => $validated['type'] === 'delivery' ? $validated['client_name'] : null,
+            'delivery_location' => $validated['type'] === 'delivery' ? $validated['delivery_location'] : null,
             'status' => 'activo',
             'total' => collect($validated['items'])->sum(function($item) { return $item['price'] * $item['quantity']; }),
         ]);
@@ -142,6 +148,8 @@ class OrderController extends Controller
         $validated = $request->validate([
             'notes' => 'nullable|string',
             'status' => 'sometimes|required|in:activo,cerrado,cancelado',
+            'client_name' => 'nullable|string',
+            'delivery_location' => 'nullable|string',
         ]);
         $order->update($validated);
         $orderWithItems = $order->load(['items.product']);

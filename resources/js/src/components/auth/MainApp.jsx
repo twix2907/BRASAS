@@ -48,35 +48,6 @@ const MainApp = ({ children }) => {
   if (!workerAuthenticated) {
     return (
       <div>
-        {/* Botón para cerrar sesión de admin */}
-        <div style={{ 
-          position: 'absolute', 
-          top: 16, 
-          right: 16, 
-          zIndex: 1000 
-        }}>
-          <button
-            onClick={handleAdminLogout}
-            style={{
-              background: '#ff4444',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 16px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              boxShadow: '0 2px 8px rgba(255, 68, 68, 0.3)'
-            }}
-            title="Cerrar sesión de administrador y volver a requerir autenticación"
-          >
-            🔒 Cerrar Sesión Admin
-          </button>
-        </div>
-        
         <Login onLogin={handleWorkerLogin} />
       </div>
     );
@@ -85,35 +56,6 @@ const MainApp = ({ children }) => {
   // Si ambos están autenticados, mostrar la aplicación principal
   return (
     <div>
-      {/* Botón para cerrar sesión de admin */}
-      <div style={{ 
-        position: 'absolute', 
-        top: 16, 
-        right: 16, 
-        zIndex: 1000 
-      }}>
-        <button
-          onClick={handleAdminLogout}
-          style={{
-            background: '#ff4444',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '10px 16px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            boxShadow: '0 2px 8px rgba(255, 68, 68, 0.3)'
-          }}
-          title="Cerrar sesión de administrador y volver a requerir autenticación"
-        >
-          🔒 Cerrar Sesión Admin
-        </button>
-      </div>
-      
       {children}
     </div>
   );

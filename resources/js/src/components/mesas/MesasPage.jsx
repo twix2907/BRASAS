@@ -10,6 +10,7 @@ import MesaForm from './MesaForm';
 import MesaCard from './MesaCard';
 import ModalOrdenDetalle from '../ModalOrdenDetalle';
 import PedidoItemsList from '../pedidos/PedidoItemsList';
+import ModalConfirmacion from '../common/ModalConfirmacion';
 import { BotonPruebaImpresion } from '../BotonPruebaImpresion';
 import Toast from '../common/Toast';
 
@@ -18,9 +19,14 @@ import { STYLES } from '../../constants/mesasStyles';
 const MesasPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [ordenDetalle, setOrdenDetalle] = useState(null);
+  const [modalEliminar, setModalEliminar] = useState({ open: false, mesa: null, loading: false });
+
+  // Obtener usuario actual para verificar permisos
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const esAdmin = usuario.role === 'admin';
 
   // Custom hooks
-  const { mesas, loading, error, refetch, updateMesaLocal, addMesaLocal } = useMesas();
+  const { mesas, loading, error, refetch, updateMesaLocal, addMesaLocal, removeMesaLocal } = useMesas();
   const { ordenes: ordenesActivas, fetchOrdenes } = useOrdenesActivas();
   const { toastMsg, showToast } = useToast();
   const { getOrderDetail } = useOrderDetail();
@@ -34,7 +40,8 @@ const MesasPage = () => {
     handleOcupacionChange,
     startEdit,
     cancelEdit,
-  } = useMesasLogic(mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal);
+    deleteMesa,
+  } = useMesasLogic(mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal, removeMesaLocal);
 
   // Eventos en tiempo real
   useRealtimeEvents(updateMesaLocal, fetchOrdenes, addMesaLocal, mesas);
@@ -71,6 +78,24 @@ const MesasPage = () => {
 
   const handleSaveEdit = async () => {
     await updateMesa(editState.mesaId, editState.nombre, editState.personas);
+  };
+
+  const handleDeleteMesa = (mesa) => {
+    setModalEliminar({ open: true, mesa, loading: false });
+  };
+
+  const confirmarEliminar = async () => {
+    setModalEliminar(prev => ({ ...prev, loading: true }));
+    const exito = await deleteMesa(modalEliminar.mesa.id);
+    if (exito) {
+      setModalEliminar({ open: false, mesa: null, loading: false });
+    } else {
+      setModalEliminar(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const cancelarEliminar = () => {
+    setModalEliminar({ open: false, mesa: null, loading: false });
   };
 
   if (loading) {
@@ -119,7 +144,9 @@ const MesasPage = () => {
                   onToggleStatus={toggleMesaStatus}
                   onOcupacionChange={handleOcupacionChange}
                   onOpenDetail={handleOpenDetail}
+                  onDelete={handleDeleteMesa}
                   setEditState={setEditState}
+                  esAdmin={esAdmin}
                 />
               );
             })
@@ -162,6 +189,18 @@ const MesasPage = () => {
             </>
           )}
         </ModalOrdenDetalle>
+
+        <ModalConfirmacion
+          open={modalEliminar.open}
+          onClose={cancelarEliminar}
+          onConfirm={confirmarEliminar}
+          titulo="Eliminar Mesa"
+          mensaje={`¿Estás seguro de que deseas eliminar la mesa "${modalEliminar.mesa?.name}"?\n\nEsta acción no se puede deshacer y solo es posible si la mesa no tiene pedidos asociados.`}
+          textoConfirmar="Eliminar"
+          textoCancelar="Cancelar"
+          loading={modalEliminar.loading}
+          tipo="peligro"
+        />
       </div>
     </div>
   );

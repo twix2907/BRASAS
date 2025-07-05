@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="80" height="80" rx="16" fill="#f3f3f3"/>
+  <rect width="80" height="80" rx="16" fill="#ffd203" fill-opacity="0.13"/>
+  <g>
+    <image href="/logo_brasas.jpg" x="20" y="20" height="40" width="40" opacity="0.7"/>
+  </g>
+  <rect x="0.5" y="0.5" width="79" height="79" rx="15.5" stroke="#ffd203" stroke-opacity="0.18"/>
+</svg>
