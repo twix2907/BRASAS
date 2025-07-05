@@ -81,6 +81,16 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="bienvenida-brasas">
+      <div className="login-logo-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+        <img
+          src="/logo_brasas.jpg"
+          alt="Logo D'Brasas y Carbón"
+          style={{ width: 110, height: 110, objectFit: 'contain', borderRadius: '50%', boxShadow: '0 2px 16px 0 #ffd20355', background: '#232323', marginBottom: 12 }}
+          draggable="false"
+        />
+        <h1 style={{ color: '#ffd203', fontFamily: 'inherit', fontWeight: 900, fontSize: '2.1rem', margin: 0, letterSpacing: 1 }}>D'Brasas y Carbón</h1>
+        <span style={{ color: '#fffbe7', fontSize: '1.1rem', fontWeight: 500, marginTop: 2, fontStyle: 'italic', letterSpacing: 0.5 }}>El sabor auténtico a la brasa</span>
+      </div>
       <h2 className="titulo-brasas" style={{ fontSize: '2rem' }}>Iniciar sesión</h2>
       {!usuarioSeleccionado ? (
         <>

@@ -2,45 +2,16 @@ import './App.css'
 import React, { useState } from 'react';
 import axios from './axiosConfig';
 import { useSessionWatcher } from './hooks/useSessionWatcher';
-import LoginAdminMFA from './components/usuarios/LoginAdminMFA';
-
 
 function App() {
   // Obtener usuario autenticado
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   useSessionWatcher();
 
-  // Estado para mostrar el login MFA del admin
-  const [showLoginMFA, setShowLoginMFA] = useState(true);
-
   const handleLogout = () => {
     localStorage.removeItem('usuario');
     window.location.href = '/login';
   };
-
-  // Mostrar el registro temporal del admin o el enrolamiento MFA
-  if (showLoginMFA) {
-    return (
-      <div>
-        <LoginAdminMFA />
-        <button onClick={() => setShowLoginMFA(false)} style={{ margin: 24, background: '#ffd203', color: '#010001', border: 'none', borderRadius: 8, padding: 10, fontWeight: 700 }}>Ocultar login MFA</button>
-        {/* Botón para probar sesión Sanctum */}
-        <button
-          style={{ margin: 24, background: '#ffd203', color: '#010001', border: 'none', borderRadius: 8, padding: 10, fontWeight: 700 }}
-          onClick={async () => {
-            try {
-              const res = await axios.get('/api/me');
-              alert('Usuario autenticado: ' + JSON.stringify(res.data));
-            } catch (err) {
-              alert('No autenticado o error: ' + (err.response?.data?.message || err.message));
-            }
-          }}
-        >
-          Probar sesión Sanctum
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="contenedor-principal">
