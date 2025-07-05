@@ -14,6 +14,16 @@ export default function Productos() {
   const [uploading, setUploading] = useState(false);
   const [editId, setEditId] = useState(null);
 
+  // Nuevo: deseleccionar producto y limpiar formulario
+  const handleCancelEditFull = () => {
+    setEditId(null);
+    setForm({ name: '', description: '', price: '', image_url: '', category: '' });
+    setImageFile(null);
+    setImagePreview('');
+    setImageError('');
+    setError('');
+  };
+
   // Estilos globales para evitar scroll en body/html
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -229,74 +239,323 @@ export default function Productos() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100dvh', height: '100dvh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
-      <div style={{ width: '100%', maxWidth: 600, flex: '0 0 auto', padding: '2rem', borderRadius: '1.2rem', background: '#222', margin: 0, boxShadow: '0 2px 16px #0006' }}>
+    <div style={{ 
+      height: '100%', 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      padding: '24px',
+      boxSizing: 'border-box',
+      minHeight: 0,
+      overflow: 'hidden'
+    }}>
+      <div style={{ 
+        width: '100%',
+        maxWidth: 'none',
+        flexShrink: 0,
+        marginBottom: '24px',
+        alignSelf: 'stretch',
+        paddingLeft: 0,
+        paddingRight: 0
+      }}>
         <h2 style={{ color: '#ffd203', marginBottom: 24 }}>Gestión de Productos</h2>
-        <form onSubmit={editId ? handleUpdate : handleCrear} style={{ marginBottom: 32, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Nombre" style={{ flex: 1, minWidth: 120, padding: '0.7rem', borderRadius: 8, border: '1px solid #ffd203' }} />
-          <input type="text" name="description" value={form.description} onChange={handleChange} placeholder="Descripción" style={{ flex: 2, minWidth: 120, padding: '0.7rem', borderRadius: 8, border: '1px solid #ffd203' }} />
-          <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Precio" min="0" step="0.01" style={{ width: 100, padding: '0.7rem', borderRadius: 8, border: '1px solid #ffd203' }} />
-          <input type="text" name="category" value={form.category} onChange={handleChange} placeholder="Categoría" style={{ flex: 1, minWidth: 120, padding: '0.7rem', borderRadius: 8, border: '1px solid #ffd203' }} />
-          <div ref={dropRef} style={{ flex: 2, minWidth: 120, padding: '0.7rem', border: '2px dashed #ffd203', borderRadius: 8, background: '#181818', textAlign: 'center', cursor: 'pointer', position: 'relative' }}>
-            <input
-              type="file"
-              accept="image/*"
-              style={{ opacity: 0, position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, cursor: 'pointer' }}
-              onChange={e => handleImage(e.target.files[0])}
-              title="Subir imagen"
-            />
-            {imagePreview ? (
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <img src={imagePreview} alt="Vista previa" style={{ maxHeight: 80, borderRadius: 8, margin: 4 }} />
-                <button type="button" onClick={() => { setImageFile(null); setImagePreview(''); setImageError(''); }} style={{ position: 'absolute', top: 0, right: 0, background: '#ffd203', color: '#010001', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontWeight: 700, fontSize: 16, lineHeight: '18px', padding: 0 }}>×</button>
-              </div>
-            ) : (
-              <span style={{ color: '#ffd203', fontSize: 14 }}>
-                Arrastra una imagen aquí, haz click o pega desde el portapapeles
-              </span>
-            )}
-            {imageError && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{imageError}</div>}
-          </div>
-          <button type="submit" disabled={uploading} style={{ padding: '0.7rem 1.5rem', borderRadius: '1rem', background: uploading ? '#aaa' : '#ffd203', color: '#010001', fontWeight: 700, border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: '1.1rem' }}>{uploading ? 'Subiendo imagen...' : 'Agregar'}</button>
-          {editId && (
-            <button type="button" onClick={handleCancelEdit} style={{ padding: '0.7rem 1.5rem', borderRadius: '1rem', background: '#555', color: '#ffd203', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '1.1rem', marginLeft: 8 }}>Cancelar</button>
-          )}
-        </form>
+        <form
+  onSubmit={editId ? handleUpdate : handleCrear}
+  style={{
+    marginBottom: 32,
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+    gridTemplateRows: '38px 90px 38px',
+    gap: 10,
+    width: '100%',
+    boxSizing: 'border-box',
+    alignItems: 'center',
+    gridTemplateAreas: `
+      'name name category price'
+      'desc desc desc desc'
+      'img img cancel submit'
+    `,
+    paddingLeft: 48,
+    paddingRight: 48
+  }}
+>
+  <input
+    type="text"
+    name="name"
+    value={form.name}
+    onChange={handleChange}
+    placeholder="Nombre"
+    style={{
+      gridArea: 'name',
+      width: '100%',
+      minWidth: 120,
+      padding: '0.45rem',
+      borderRadius: 8,
+      border: '1px solid #ffd203',
+      fontSize: 15,
+      height: 38,
+      boxSizing: 'border-box'
+    }}
+  />
+  <textarea
+    name="description"
+    value={form.description}
+    onChange={handleChange}
+    placeholder="Descripción"
+    rows={2}
+    style={{
+      gridArea: 'desc',
+      width: '100%',
+      minWidth: 120,
+      padding: '0.45rem',
+      borderRadius: 8,
+      border: '1px solid #ffd203',
+      resize: 'none',
+      fontSize: 15,
+      height: 38,
+      boxSizing: 'border-box',
+      marginTop: '-10px'
+    }}
+  />
+  <input
+    type="text"
+    name="category"
+    value={form.category}
+    onChange={handleChange}
+    placeholder="Categoría"
+    style={{
+      gridArea: 'category',
+      width: '100%',
+      minWidth: 120,
+      padding: '0.45rem',
+      borderRadius: 8,
+      border: '1px solid #ffd203',
+      fontSize: 15,
+      height: 38,
+      boxSizing: 'border-box'
+    }}
+  />
+  <input
+    type="number"
+    name="price"
+    value={form.price}
+    onChange={handleChange}
+    placeholder="Precio"
+    min="0"
+    step="0.01"
+    style={{
+      gridArea: 'price',
+      width: '100%',
+      minWidth: 120,
+      padding: '0.45rem',
+      borderRadius: 8,
+      border: '1px solid #ffd203',
+      fontSize: 15,
+      height: 38,
+      boxSizing: 'border-box'
+    }}
+  />
+  <div
+    ref={dropRef}
+    style={{
+      gridArea: 'img',
+      width: 120,
+      height: 80,
+      minWidth: 120,
+      minHeight: 80,
+      padding: 0,
+      border: '2px dashed #ffd203',
+      borderRadius: 8,
+      background: '#181818',
+      textAlign: 'center',
+      cursor: 'pointer',
+      position: 'relative',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
+    }}
+  >
+    <input
+      type="file"
+      accept="image/*"
+      style={{
+        opacity: 0,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        left: 0,
+        top: 0,
+        cursor: 'pointer'
+      }}
+      onChange={e => handleImage(e.target.files[0])}
+      title="Subir imagen"
+    />
+    {imagePreview ? (
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <img src={imagePreview} alt="Vista previa" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+        <button
+          type="button"
+          onClick={() => {
+            setImageFile(null);
+            setImagePreview('');
+            setImageError('');
+          }}
+          style={{
+            position: 'absolute',
+            top: 2,
+            right: 2,
+            background: '#ffd203',
+            color: '#010001',
+            border: 'none',
+            borderRadius: '50%',
+            width: 22,
+            height: 22,
+            cursor: 'pointer',
+            fontWeight: 700,
+            fontSize: 16,
+            lineHeight: '18px',
+            padding: 0,
+            zIndex: 2
+          }}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <span style={{ color: '#ffd203', fontSize: 14 }}>
+        Arrastra una imagen aquí, haz click o pega desde el portapapeles
+      </span>
+    )}
+    {imageError && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{imageError}</div>}
+  </div>
+  {editId && (
+    <button
+      type="button"
+      onClick={handleCancelEditFull}
+      style={{
+        gridArea: 'cancel',
+        padding: '0.7rem 1.5rem',
+        borderRadius: '1rem',
+        background: '#ffd203',
+        color: '#010001',
+        fontWeight: 700,
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '1.1rem',
+        width: '100%'
+      }}
+    >
+      Cancelar
+    </button>
+  )}
+  <button
+    type="submit"
+    disabled={uploading}
+    style={{
+      gridArea: 'submit',
+      padding: '0.7rem 1.5rem',
+      borderRadius: '1rem',
+      background: uploading ? '#aaa' : '#ffd203',
+      color: '#010001',
+      fontWeight: 700,
+      border: 'none',
+      cursor: uploading ? 'not-allowed' : 'pointer',
+      fontSize: '1.1rem',
+      width: '100%'
+    }}
+  >
+    {uploading ? 'Subiendo imagen...' : editId ? 'Editar' : 'Agregar'}
+  </button>
+</form>
         {error && <p style={{ color: 'red', marginBottom: 16 }}>{error}</p>}
       </div>
-      <div style={{ width: '100%', maxWidth: 600, flex: 1, overflow: 'auto', margin: 0, padding: 0, background: '#222', borderRadius: '1.2rem', boxShadow: '0 2px 16px #0006', marginTop: 16 }}>
+      <div style={{ 
+        width: '100%',
+        flex: 1,
+        minHeight: 0,
+        alignSelf: 'stretch',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#232323',
+        borderRadius: '12px',
+        padding: '24px',
+        boxSizing: 'border-box'
+      }}>
         {loading ? (
-          <p style={{ color: '#fff' }}>Cargando productos...</p>
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            color: '#fff' 
+          }}>Cargando productos...</div>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          <div style={{ 
+            flex: 1, 
+            minHeight: 0, 
+            overflowY: 'auto',
+            position: 'relative',
+            maxHeight: '100%',
+          }}>
             {productos.length === 0 ? (
-              <li style={{ color: '#fff' }}>No hay productos registrados.</li>
+              <div style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>No hay productos registrados.</div>
             ) : (
-              productos.map(prod => (
-                <li key={prod.id} style={{ background: prod.active ? '#333' : '#555', color: prod.active ? '#ffd203' : '#aaa', padding: '0.7rem 1.2rem', borderRadius: 8, marginBottom: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div onClick={() => handleEditClick(prod)} style={{ flex: 1, minWidth: 0 }}>
-                    <b>{prod.name}</b> <span style={{ fontSize: 13, color: '#fff', marginLeft: 8 }}>({prod.category}{!prod.active && ' - inhabilitado'})</span> - ${prod.price}
-                    <img
-                      src={prod.image_url ? prod.image_url : '/logo_brasas.jpg'}
-                      alt={prod.name}
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
+                <thead>
+                  <tr style={{ background: '#181818', position: 'sticky', top: 0, zIndex: 2 }}>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203', background: '#181818' }}>Imagen</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'left', borderBottom: '2px solid #ffd203', background: '#181818' }}>Nombre</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'left', borderBottom: '2px solid #ffd203', background: '#181818' }}>Descripción</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203', background: '#181818' }}>Categoría</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203', background: '#181818' }}>Precio</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203', background: '#181818' }}>Estado</th>
+                    <th style={{ color: '#ffd203', fontWeight: 800, fontSize: 15, padding: '8px', textAlign: 'center', borderBottom: '2px solid #ffd203', background: '#181818' }}>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.map(prod => (
+                    <tr
+                      key={prod.id}
                       style={{
-                        height: 40,
-                        marginLeft: 12,
-                        borderRadius: 6,
-                        verticalAlign: 'middle',
-                        filter: prod.image_url ? 'none' : 'grayscale(1)',
-                        opacity: prod.image_url ? 1 : 0.7
+                        background: editId === prod.id ? '#2a2a1a' : 'transparent',
+                        borderRadius: 10,
+                        borderBottom: '1px solid #333',
+                        transition: 'border 0.15s',
+                        outline: editId === prod.id ? '2.5px solid #ffd203' : 'none',
+                        border: editId === prod.id ? '2.5px solid #ffd203' : '2.5px solid transparent',
+                        cursor: 'pointer',
                       }}
-                    />
-                    <div style={{ fontSize: 13, color: '#fff', marginTop: 4 }}>{prod.description}</div>
-                  </div>
-                  <button type="button" onClick={() => handleToggleActivo(prod)} style={{ marginLeft: 12, padding: '0.4rem 1rem', borderRadius: 8, background: prod.active ? '#ffd203' : '#444', color: prod.active ? '#010001' : '#ffd203', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
-                    {prod.active ? 'Inhabilitar' : 'Reactivar'}
-                  </button>
-                </li>
-              ))
+                      onClick={() => handleEditClick(prod)}
+                    >
+                      <td style={{ textAlign: 'center', padding: '6px' }}>
+                        <img
+                          src={prod.image_url ? prod.image_url : '/logo_brasas.jpg'}
+                          alt={prod.name}
+                          style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, background: '#333', filter: prod.image_url ? 'none' : 'grayscale(1)', opacity: prod.image_url ? 1 : 0.7 }}
+                        />
+                      </td>
+                      <td style={{ color: '#ffd203', fontWeight: 700, fontSize: 15, padding: '6px', textAlign: 'left', maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={prod.name}>
+                        {prod.name}
+                      </td>
+                      <td style={{ color: '#fffbe7', fontWeight: 400, fontSize: 14, padding: '6px', textAlign: 'left', maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={prod.description}>
+                        {prod.description}
+                      </td>
+                      <td style={{ color: '#ffd203', fontWeight: 600, fontSize: 14, padding: '6px', textAlign: 'center' }}>{prod.category}</td>
+                      <td style={{ color: '#fffbe7', fontWeight: 700, fontSize: 15, padding: '6px', textAlign: 'center' }}>S/ {Number(prod.price || 0).toFixed(2)}</td>
+                      <td style={{ color: '#fffbe7', fontWeight: 700, fontSize: 14, padding: '6px', textAlign: 'center' }}>{prod.active ? 'Activo' : 'Inhabilitado'}</td>
+                      <td style={{ textAlign: 'center', padding: '6px' }}>
+                        <button type="button" onClick={() => handleToggleActivo(prod)} style={{ padding: '0.4rem 1rem', borderRadius: 8, background: prod.active ? '#ffd203' : '#444', color: prod.active ? '#010001' : '#ffd203', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+                          {prod.active ? 'Inhabilitar' : 'Reactivar'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-          </ul>
+          </div>
         )}
       </div>
     </div>
