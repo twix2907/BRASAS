@@ -20,6 +20,7 @@ class TableController extends Controller
             return [
                 'id' => $mesa->id,
                 'name' => $mesa->name,
+                'personas' => $mesa->personas,
                 'active' => $mesa->active,
                 'status' => $mesa->status, // Calculado dinámicamente
             ];
