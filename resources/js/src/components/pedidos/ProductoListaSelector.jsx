@@ -46,10 +46,14 @@ function ProductoListaSelector({ productos, value, onChange, error, loading }) {
               aria-label={`Seleccionar ${p.name}`}
             >
               <img
-                src={p.image_url || '/images/producto-placeholder.png'}
+                src={p.image_url ? p.image_url : '/logo_brasas.jpg'}
                 alt={p.name}
                 className={styles.productoImg}
                 loading="lazy"
+                style={{
+                  filter: p.image_url ? 'none' : 'grayscale(1)',
+                  opacity: p.image_url ? 1 : 0.7
+                }}
               />
               <div className={styles.productoInfo}>
                 <span className={styles.productoNombre}>{p.name}</span>

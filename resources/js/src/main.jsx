@@ -1,4 +1,4 @@
-import React, { StrictMode } from 'react';
+import React, { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from './axiosConfig';
@@ -11,6 +11,7 @@ import OrdenesActivas from './pages/OrdenesActivas.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 import MenuPublico from './pages/MenuPublico.jsx';
 import ProtectedApp from './ProtectedApp.jsx';
+import { printTicket, vistaPreviaTicket } from './helpers/printTicket';
 import './index.css';
 
 // Inicializar cookie CSRF una sola vez al cargar la aplicación
@@ -29,6 +30,16 @@ function isAuthenticated() {
 }
 
 function Root() {
+  // Asignar funciones de impresión a window globalmente
+  useEffect(() => {
+    window.printTicket = printTicket;
+    window.vistaPreviaTicket = vistaPreviaTicket;
+    return () => {
+      delete window.printTicket;
+      delete window.vistaPreviaTicket;
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

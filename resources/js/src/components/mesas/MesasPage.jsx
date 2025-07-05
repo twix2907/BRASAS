@@ -20,7 +20,7 @@ const MesasPage = () => {
   const [ordenDetalle, setOrdenDetalle] = useState(null);
 
   // Custom hooks
-  const { mesas, loading, error, refetch } = useMesas();
+  const { mesas, loading, error, refetch, updateMesaLocal, addMesaLocal } = useMesas();
   const { ordenes: ordenesActivas, fetchOrdenes } = useOrdenesActivas();
   const { toastMsg, showToast } = useToast();
   const { getOrderDetail } = useOrderDetail();
@@ -34,10 +34,10 @@ const MesasPage = () => {
     handleOcupacionChange,
     startEdit,
     cancelEdit,
-  } = useMesasLogic(mesas, refetch, fetchOrdenes, showToast);
+  } = useMesasLogic(mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal);
 
   // Eventos en tiempo real
-  useRealtimeEvents(refetch, fetchOrdenes);
+  useRealtimeEvents(updateMesaLocal, fetchOrdenes, addMesaLocal, mesas);
 
   const handleOpenDetail = async (ordenActiva, mesa) => {
     try {

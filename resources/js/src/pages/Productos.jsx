@@ -276,7 +276,18 @@ export default function Productos() {
                 <li key={prod.id} style={{ background: prod.active ? '#333' : '#555', color: prod.active ? '#ffd203' : '#aaa', padding: '0.7rem 1.2rem', borderRadius: 8, marginBottom: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div onClick={() => handleEditClick(prod)} style={{ flex: 1, minWidth: 0 }}>
                     <b>{prod.name}</b> <span style={{ fontSize: 13, color: '#fff', marginLeft: 8 }}>({prod.category}{!prod.active && ' - inhabilitado'})</span> - ${prod.price}
-                    {prod.image_url && <img src={prod.image_url} alt={prod.name} style={{ height: 40, marginLeft: 12, borderRadius: 6, verticalAlign: 'middle' }} />}
+                    <img
+                      src={prod.image_url ? prod.image_url : '/logo_brasas.jpg'}
+                      alt={prod.name}
+                      style={{
+                        height: 40,
+                        marginLeft: 12,
+                        borderRadius: 6,
+                        verticalAlign: 'middle',
+                        filter: prod.image_url ? 'none' : 'grayscale(1)',
+                        opacity: prod.image_url ? 1 : 0.7
+                      }}
+                    />
                     <div style={{ fontSize: 13, color: '#fff', marginTop: 4 }}>{prod.description}</div>
                   </div>
                   <button type="button" onClick={() => handleToggleActivo(prod)} style={{ marginLeft: 12, padding: '0.4rem 1rem', borderRadius: 8, background: prod.active ? '#ffd203' : '#444', color: prod.active ? '#010001' : '#ffd203', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>

@@ -47,15 +47,26 @@ function formatearTicket(data, tipo) {
   out += "D'Brasas y Carbón\n";
   out += 'El sabor auténtico a la brasa\n';
   out += '\n';
+  out += `Ticket N°: ${data.id || '-'}\n`;
+  out += '-------------------------------\n';
   if (tipo === 'ticket') {
     out += 'TICKET DE VENTA\n';
   } else {
     out += 'COMANDA\n';
   }
-  out += `Mesa: ${data.mesa || '-'}\n`;
-  out += `Atiende: ${data.usuario || '-'}\n`;
+  out += `Tipo de pedido: ${data.tipo === 'mesa' ? 'Mesa' : data.tipo === 'para_llevar' ? 'Para llevar' : data.tipo === 'delivery' ? 'Delivery' : '-'}\n`;
+  if (data.tipo === 'delivery' && data.client_name) {
+    out += `Cliente: ${data.client_name}\n`;
+  }
+  if (data.tipo === 'delivery' && data.delivery_location) {
+    out += `Ubicación: ${data.delivery_location}\n`;
+  }
+  if (data.mesa) {
+    out += `Mesa: ${data.mesa}\n`;
+  }
+  out += `Atiende: ${data.usuario && data.usuario.name ? data.usuario.name : '-'}\n`;
   out += `Fecha: ${data.fecha || '-'}\n`;
-  out += '\n';
+  out += '-------------------------------\n';
   out += 'Cant  Producto           Subtotal\n';
   out += '-------------------------------\n';
   (data.productos || []).forEach(p => {
@@ -67,12 +78,12 @@ function formatearTicket(data, tipo) {
       const precio = p.precio ?? p.price ?? 0;
       subtotal = precio * cantidad;
     }
-    out += `${cantidad.toString().padEnd(4)} ${nombre.padEnd(18)} $${Number(subtotal).toFixed(2)}\n`;
+    out += `${cantidad.toString().padEnd(4)} ${nombre.padEnd(18)} S/${Number(subtotal).toFixed(2)}\n`;
     if (p.nota || p.notes) out += `  Nota: ${p.nota || p.notes}\n`;
   });
   out += '-------------------------------\n';
   const total = typeof data.total === 'number' ? data.total : Number(data.total) || 0;
-  out += `TOTAL: $${total.toFixed(2)}\n`;
+  out += `TOTAL: S/${total.toFixed(2)}\n`;
   out += '\n';
   if (tipo === 'ticket') {
     out += '¡Gracias por su visita!\n';

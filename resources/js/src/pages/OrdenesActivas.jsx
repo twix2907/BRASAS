@@ -10,10 +10,10 @@ function OrdenesActivas() {
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // Nuevo: incluir históricos
   const [mostrarHistoricos, setMostrarHistoricos] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [ordenDetalle, setOrdenDetalle] = useState(null);
+  const [expandida, setExpandida] = useState(null); // id de la orden expandida
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -101,90 +101,114 @@ function OrdenesActivas() {
             ) : (
               ordenes.map(orden => {
                 const esHistorico = orden.status !== 'activo';
+                const expandidaEsta = expandida === orden.id;
                 return (
-                  <div key={orden.id} style={{
-                    background: esHistorico ? '#353535' : '#232323',
-                    border: esHistorico ? '2px solid #888' : '2px solid #ffd203',
-                    borderRadius: 16,
-                    padding: '1.2rem 1.5rem',
-                    boxShadow: esHistorico ? '0 2px 12px 0 rgba(100,100,100,0.10)' : '0 2px 12px 0 rgba(0,0,0,0.10)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                    minWidth: 0,
-                    maxWidth: 420,
-                    opacity: esHistorico ? 0.7 : 1,
-                  }}>
+                  <div
+                    key={orden.id}
+                    style={{
+                      background: esHistorico ? '#353535' : '#232323',
+                      border: esHistorico ? '2px solid #888' : '2px solid #ffd203',
+                      borderRadius: 16,
+                      padding: '0.7rem 1.1rem', // padding reducido
+                      boxShadow: esHistorico ? '0 2px 12px 0 rgba(100,100,100,0.10)' : '0 2px 12px 0 rgba(0,0,0,0.10)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                      minWidth: 320,
+                      maxWidth: 420,
+                      width: 380,
+                      // minHeight eliminado para que el alto sea solo el del contenido
+                      opacity: esHistorico ? 0.7 : 1,
+                      cursor: 'pointer',
+                      transition: 'box-shadow 0.2s',
+                      boxShadow: expandidaEsta ? '0 0 0 3px #ffd203' : undefined,
+                      justifyContent: 'flex-start',
+                      alignItems: 'stretch',
+                    }}
+                    onClick={() => setExpandida(expandidaEsta ? null : orden.id)}
+                  >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                       <span style={{ fontWeight: 900, color: esHistorico ? '#aaa' : '#ffd203', fontSize: '1.1rem' }}>
-                        {orden.type === 'mesa' ? 'Mesa' : orden.type === 'para_llevar' ? 'Para llevar' : 'Delivery'}
+                        Ticket #{orden.id} · {orden.type === 'mesa' ? 'Mesa' : orden.type === 'para_llevar' ? 'Para llevar' : 'Delivery'}
                         {orden.table_id ? ` · Mesa ${orden.table_id}` : ''}
                         {esHistorico && <span style={{ marginLeft: 8, color: '#ff4d4f', fontWeight: 700, fontSize: '0.95rem' }}>(Histórico)</span>}
                       </span>
                       <span style={{ color: '#fffbe7', fontWeight: 700, fontSize: '1rem' }}>{orden.created_at ? orden.created_at.substring(11,16) : ''}</span>
                     </div>
-                    <div style={{ color: esHistorico ? '#aaa' : '#ffd203', fontWeight: 700, fontSize: '1rem' }}>Usuario: {orden.user_id || '-'}</div>
-                    <div style={{ color: '#fffbe7', fontSize: '0.98rem', marginBottom: 2 }}>
-                      {orden.items && orden.items.length > 0 ? (
-                        orden.items.map((p, i) => (
-                          <span key={i} style={{ marginRight: 12 }}>
-                            {p.quantity} x {p.product?.name || `Producto #${p.product_id}`}
-                          </span>
-                        ))
-                      ) : (
-                        <span>Sin productos</span>
-                      )}
+                    {orden.type === 'delivery' && (orden.client_name || orden.delivery_location) && (
+                      <div style={{ color: '#ffd203', fontSize: '0.98rem', marginBottom: 2, fontWeight: 700 }}>
+                        {orden.client_name && <span>Cliente: {orden.client_name}</span>}
+                        {orden.client_name && orden.delivery_location && <span> · </span>}
+                        {orden.delivery_location && <span>Ubicación: {orden.delivery_location}</span>}
+                      </div>
+                    )}
+                    <div style={{ color: esHistorico ? '#aaa' : '#ffd203', fontWeight: 700, fontSize: '1rem' }}>
+                      Atendido por: {orden.user && orden.user.name ? orden.user.name : '-'}
                     </div>
-                    <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-                      {!esHistorico && (
-                        <button
-                          style={{ background: '#ffd203', color: '#010001', border: 'none', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}
-                          onClick={async () => {
-                            if (window.confirm('¿Seguro que deseas cancelar esta orden?')) {
+                    {expandidaEsta && (
+                      <>
+                        <div style={{ color: '#fffbe7', fontSize: '0.98rem', marginBottom: 2 }}>
+                          {orden.items && orden.items.length > 0 ? (
+                            orden.items.map((p, i) => (
+                              <span key={i} style={{ marginRight: 12 }}>
+                                {p.quantity} x {p.product?.name || `Producto #${p.product_id}`}
+                              </span>
+                            ))
+                          ) : (
+                            <span>Sin productos</span>
+                          )}
+                        </div>
+                        <div style={{ color: '#ffd203', fontWeight: 700, fontSize: '1.1rem', marginTop: 4 }}>
+                          Total: S/{typeof orden.total === 'number' ? orden.total.toFixed(2) : (orden.total && !isNaN(Number(orden.total))) ? Number(orden.total).toFixed(2) : '-'}
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                          {!esHistorico && (
+                            <button
+                              style={{ background: '#ffd203', color: '#010001', border: 'none', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (window.confirm('¿Seguro que deseas cancelar esta orden?')) {
+                                  try {
+                                    await axios.delete(`/api/orders/${orden.id}`);
+                                    setOrdenes(prev => prev.filter(o => o.id !== orden.id));
+                                  } catch {
+                                    alert('No se pudo cancelar la orden.');
+                                  }
+                                }
+                              }}
+                            >Cancelar</button>
+                          )}
+                          {!esHistorico && (
+                            <button
+                              style={{ background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const res = await axios.get(`/api/orders/${orden.id}/print-data`);
+                                  const printData = res.data.pedido || res.data;
+                                  await window.printTicket(printData, 'ticket');
+                                } catch (err) {
+                                  alert('No se pudo imprimir el ticket.');
+                                }
+                              }}
+                            >Imprimir</button>
+                          )}
+                          <button
+                            style={{ background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               try {
-                                await axios.delete(`/api/orders/${orden.id}`);
-                                setOrdenes(prev => prev.filter(o => o.id !== orden.id));
-                              } catch {
-                                alert('No se pudo cancelar la orden.');
+                                const res = await axios.get(`/api/orders/${orden.id}/print-data`);
+                                const printData = res.data.pedido || res.data;
+                                window.vistaPreviaTicket(printData, 'ticket');
+                              } catch (err) {
+                                alert('No se pudo mostrar la vista previa.');
                               }
-                            }
-                          }}
-                        >Cancelar</button>
-                      )}
-                      <button style={{ background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}>Reimprimir</button>
-                      <button
-                        style={{ background: '#232323', color: '#ffd203', border: '2px solid #ffd203', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 800, cursor: 'pointer' }}
-                        onClick={async () => {
-                          try {
-                            const res = await axios.get(`/api/orders/${orden.id}`);
-                            const data = res.data;
-                            setOrdenDetalle({
-                              id: data.id,
-                              mesa: data.table_id,
-                              productos: data.items.map(item => ({
-                                name: item.product?.name || 'Producto',
-                                quantity: item.quantity,
-                                price: item.price,
-                                notes: item.notes
-                              })),
-                              total: data.total,
-                              estado: data.status || 'Activo',
-                            });
-                            setModalOpen(true);
-                          } catch {
-                            setOrdenDetalle({
-                              id: orden.id,
-                              mesa: orden.table_id,
-                              productos: [],
-                              total: 0,
-                              estado: orden.status || 'Error',
-                              error: 'No se pudo cargar el detalle de la orden.'
-                            });
-                            setModalOpen(true);
-                          }
-                        }}
-                      >Ver Detalle</button>
-                    </div>
+                            }}
+                          >Vista previa</button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
               })
@@ -198,7 +222,17 @@ function OrdenesActivas() {
       <ModalOrdenDetalle open={modalOpen} onClose={() => setModalOpen(false)}>
         {ordenDetalle && (
           <>
-            <h3 style={{ color: '#ffd203', marginBottom: 10 }}>Orden #{ordenDetalle.id} - Mesa {ordenDetalle.mesa}</h3>
+            <h3 style={{ color: '#ffd203', marginBottom: 10 }}>
+              Orden #{ordenDetalle.id}
+              {ordenDetalle.mesa ? ` - Mesa ${ordenDetalle.mesa}` : ''}
+            </h3>
+            {ordenDetalle.type === 'delivery' && (ordenDetalle.client_name || ordenDetalle.delivery_location) && (
+              <div style={{ color: '#ffd203', fontSize: '1rem', marginBottom: 8, fontWeight: 700 }}>
+                {ordenDetalle.client_name && <span>Cliente: {ordenDetalle.client_name}</span>}
+                {ordenDetalle.client_name && ordenDetalle.delivery_location && <span> · </span>}
+                {ordenDetalle.delivery_location && <span>Ubicación: {ordenDetalle.delivery_location}</span>}
+              </div>
+            )}
             <div style={{ marginBottom: 10 }}>
               <span style={{ color: '#fff', fontWeight: 700 }}>Estado: </span>
               <span style={{ color: '#ffd203', fontWeight: 700 }}>{ordenDetalle.estado}</span>

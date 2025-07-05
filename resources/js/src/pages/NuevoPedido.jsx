@@ -32,6 +32,8 @@ function NuevoPedido({ onPedidoCreado }) {
   }, [location.search]);
   const [tipo, setTipo] = useState('mesa');
   const [items, setItems] = useState([]);
+  const [clientName, setClientName] = useState('');
+  const [deliveryLocation, setDeliveryLocation] = useState('');
   const [productoId, setProductoId] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [nota, setNota] = useState('');
@@ -98,7 +100,7 @@ function NuevoPedido({ onPedidoCreado }) {
     setLoading(true);
     try {
       const usuario = JSON.parse(localStorage.getItem('usuario'));
-      const res = await axios.post('/api/orders', {
+      const payload = {
         table_id: tipo === 'mesa' ? mesaId : null,
         user_id: usuario.id,
         type: tipo,
@@ -108,11 +110,18 @@ function NuevoPedido({ onPedidoCreado }) {
           price: i.price,
           notes: i.notes
         }))
-      });
+      };
+      if (tipo === 'delivery') {
+        payload.client_name = clientName;
+        payload.delivery_location = deliveryLocation;
+      }
+      const res = await axios.post('/api/orders', payload);
 
       setItems([]);
       setMesaId('');
       setTipo('mesa');
+      setClientName('');
+      setDeliveryLocation('');
       setSuccessMsg(pedidoTexts.pedidoExito);
       setShowToast(true);
       setTimeout(() => {
@@ -185,11 +194,35 @@ function NuevoPedido({ onPedidoCreado }) {
                     />
                   )}
                 </div>
+                {tipo === 'delivery' && (
+                  <div style={{ margin: '12px 0 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <label style={{ color: '#ffd203', fontWeight: 600 }} htmlFor="client-name">Nombre del cliente:</label>
+                    <input
+                      id="client-name"
+                      type="text"
+                      value={clientName}
+                      onChange={e => setClientName(e.target.value)}
+                      required
+                      placeholder="Nombre de quien recibe"
+                      style={{ padding: '0.5rem', borderRadius: 6, border: '1px solid #ffd203', fontSize: 16, background: '#181818', color: '#ffd203' }}
+                    />
+                    <label style={{ color: '#ffd203', fontWeight: 600 }} htmlFor="delivery-location">Ubicación para delivery:</label>
+                    <input
+                      id="delivery-location"
+                      type="text"
+                      value={deliveryLocation}
+                      onChange={e => setDeliveryLocation(e.target.value)}
+                      required
+                      placeholder="Dirección o referencia"
+                      style={{ padding: '0.5rem', borderRadius: 6, border: '1px solid #ffd203', fontSize: 16, background: '#181818', color: '#ffd203' }}
+                    />
+                  </div>
+                )}
                 <div className={styles.cantidadNotasCol}>
                   <CantidadNotas cantidad={cantidad} setCantidad={setCantidad} nota={nota} setNota={setNota} notaMax={notaMax} />
                 </div>
                 <div className={styles.pedidoItemsList}>
-                  <PedidoItemsList items={items} quitarItem={quitarItem} />
+                  <PedidoItemsList items={items} quitarItem={quitarItem} productos={productos} />
                 </div>
                 {/* El toast flotante ya muestra el mensaje de éxito */}
               </div>

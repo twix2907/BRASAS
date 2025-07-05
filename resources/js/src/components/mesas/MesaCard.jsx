@@ -48,7 +48,7 @@ const MesaCard = ({
   const handleToggleStatus = () => { setMenuOpen(false); onToggleStatus(mesa); };
   const handleOcupacion = () => { setMenuOpen(false); onOcupacionChange(mesa, ordenActiva); };
 
-  // Estilos básicos (puedes mover a un archivo aparte)
+  // Color de tarjeta original (sin cambio por cantidad de personas)
   const cardStyle = {
     background: !mesa.active ? '#444' : ocupada ? '#3a1818' : '#232323',
     color: !mesa.active ? '#aaa' : ocupada ? '#ff4d4f' : '#ffd203',
@@ -161,7 +161,47 @@ const MesaCard = ({
         {Number(mesa.personas) || 1}p
       </span>
       {/* Icono SVG de mesa */}
-      <img src={mesaImg} width={60} height={60} alt="Mesa" style={{ margin: '24px 0 8px 0', filter: mesa.active ? '' : 'grayscale(1)', opacity: mesa.active ? 1 : 0.5 }} />
+      {/* Icono SVG de mesa con color dinámico de relleno y borde */}
+      <svg
+        width={60}
+        height={60}
+        viewBox="0 0 26 26"
+        style={{ margin: '24px 0 8px 0', opacity: mesa.active ? 1 : 0.5, filter: mesa.active ? '' : 'grayscale(1)' }}
+        aria-label="Mesa"
+      >
+        <g>
+          <path
+            d="M25.484,7.114l-4.278-3.917C21.034,3.069,20.825,3,20.61,3H5.38C5.165,3,4.956,3.069,4.783,3.197l-4.38,4C0.403,7.197,0,7.453,0,8v2c0,0.551,0.449,1,1,1h24c0.551,0,1-0.449,1-1V8C26,7.469,25.484,7.114,25.484,7.114z"
+            fill={Number(mesa.personas) < 3 ? '#00bfff' : '#ffd203'}
+            stroke={Number(mesa.personas) < 3 ? '#0077b6' : '#bfa600'}
+            strokeWidth={0.7}
+          />
+          <path
+            d="M2,23c-0.551,0-1-0.449-1-1V10h3v12c0,0.551-0.449,1-1,1H2z"
+            fill={Number(mesa.personas) < 3 ? '#00bfff' : '#ffd203'}
+            stroke={Number(mesa.personas) < 3 ? '#0077b6' : '#bfa600'}
+            strokeWidth={0.7}
+          />
+          <path
+            d="M23,23c-0.551,0-1-0.449-1-1V10h3v12c0,0.551-0.449,1-1,1H23z"
+            fill={Number(mesa.personas) < 3 ? '#00bfff' : '#ffd203'}
+            stroke={Number(mesa.personas) < 3 ? '#0077b6' : '#bfa600'}
+            strokeWidth={0.7}
+          />
+          <path
+            d="M20,18c-0.551,0-1-0.449-1-1v-5h2v5C21,17.551,20.551,18,20,18L20,18z"
+            fill={Number(mesa.personas) < 3 ? '#00bfff' : '#ffd203'}
+            stroke={Number(mesa.personas) < 3 ? '#0077b6' : '#bfa600'}
+            strokeWidth={0.7}
+          />
+          <path
+            d="M6,18c-0.551,0-1-0.449-1-1v-5h2v5C7,17.551,6.551,18,6,18L6,18z"
+            fill={Number(mesa.personas) < 3 ? '#00bfff' : '#ffd203'}
+            stroke={Number(mesa.personas) < 3 ? '#0077b6' : '#bfa600'}
+            strokeWidth={0.7}
+          />
+        </g>
+      </svg>
       <span style={{ fontWeight: 900, fontSize: 18, color: '#ffd203', marginBottom: 2 }}>{mesa.name}</span>
       {/* <span style={{ fontWeight: 700, fontSize: 15, color: '#fff', marginBottom: 8 }}>{Number(mesa.personas) || 1}p</span> */}
       {/* Botón Crear pedido */}

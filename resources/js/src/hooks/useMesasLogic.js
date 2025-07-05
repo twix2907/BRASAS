@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import axios from '../axiosConfig';
 import { validateMesaName, validatePersonas } from '../utils/mesasValidation';
 
-export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast) => {
+// Recibe funciones optimistas del hook useMesas
+export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast, updateMesaLocal, addMesaLocal) => {
   const [editState, setEditState] = useState({
     mesaId: null,
     nombre: '',
@@ -23,17 +24,25 @@ export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast) => {
       return false;
     }
 
+    // Generar un id temporal negativo para la mesa optimista
+    const tempId = Date.now() * -1;
+    const mesaTemp = { id: tempId, name: nombre.trim(), personas, active: true };
+    addMesaLocal(mesaTemp);
     try {
-      await axios.post('/api/mesas', { name: nombre.trim(), personas });
+      const res = await axios.post('/api/mesas', { name: nombre.trim(), personas });
+      // Reemplazar la mesa temporal por la real
+      if (res.data && res.data.id) {
+        updateMesaLocal({ ...mesaTemp, ...res.data });
+      }
       showToast('Mesa creada exitosamente');
-      refetch();
       return true;
     } catch (error) {
-      console.error('Error creating mesa:', error);
       showToast('Error al crear mesa');
+      // Revertir mesa temporal
+      updateMesaLocal({ ...mesaTemp, deleted: true });
       return false;
     }
-  }, [mesas, refetch, showToast]);
+  }, [mesas, showToast, addMesaLocal, updateMesaLocal]);
 
   const updateMesa = useCallback(async (mesaId, nombre, personas) => {
     const validation = validateMesaName(nombre, mesas, mesaId);
@@ -49,37 +58,38 @@ export const useMesasLogic = (mesas, refetch, fetchOrdenes, showToast) => {
     }
 
     setEditState(prev => ({ ...prev, loading: true }));
+    // Optimista: actualiza localmente
+    updateMesaLocal({ id: mesaId, name: nombre.trim(), personas });
     try {
-      await axios.put(`/api/mesas/${mesaId}`, { 
-        name: nombre.trim(), 
-        personas 
-      });
+      await axios.put(`/api/mesas/${mesaId}`, { name: nombre.trim(), personas });
       showToast('Mesa actualizada exitosamente');
-      refetch();
       setEditState({ mesaId: null, nombre: '', personas: 0, loading: false });
       return true;
     } catch (error) {
-      console.error('Error updating mesa:', error);
       showToast('Error al actualizar mesa');
+      // Revertir (opcional: podrías volver a llamar a refetch o guardar el estado anterior)
+      refetch();
       return false;
     } finally {
       setEditState(prev => ({ ...prev, loading: false }));
     }
-  }, [mesas, refetch, showToast]);
+  }, [mesas, showToast, updateMesaLocal, refetch]);
 
   const toggleMesaStatus = useCallback(async (mesa) => {
     setEditState(prev => ({ ...prev, loading: true }));
+    // Optimista: actualiza localmente
+    updateMesaLocal({ id: mesa.id, active: !mesa.active });
     try {
       await axios.put(`/api/mesas/${mesa.id}`, { active: !mesa.active });
       showToast(mesa.active ? 'Mesa inhabilitada' : 'Mesa reactivada');
-      refetch();
     } catch (error) {
-      console.error('Error toggling mesa status:', error);
       showToast('Error al actualizar mesa');
+      // Revertir
+      refetch();
     } finally {
       setEditState(prev => ({ ...prev, loading: false }));
     }
-  }, [refetch, showToast]);
+  }, [showToast, updateMesaLocal, refetch]);
 
   const handleOcupacionChange = useCallback(async (mesa, ordenActiva) => {
     try {
