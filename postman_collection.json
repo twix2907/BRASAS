@@ -1,0 +1,146 @@
+{
+  "info": {
+    "name": "D'Brasas y Carbón API",
+    "description": "Colección de pruebas para todos los endpoints principales del sistema.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Menú público",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{base_url}}/api/menu", "host": ["{{base_url}}"], "path": ["api", "menu"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+          "pm.test(\"Es un array de productos\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Crear producto",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": { "raw": "{{base_url}}/api/productos", "host": ["{{base_url}}"], "path": ["api", "productos"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Parrilla Mixta\",\n  \"description\": \"Carne, pollo y chorizo\",\n  \"price\": 120.00,\n  \"image_url\": \"https://ejemplo.com/imagen.jpg\",\n  \"category\": \"parrillas\",\n  \"active\": true\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+          "pm.test(\"Producto creado\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Listar productos",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{base_url}}/api/productos", "host": ["{{base_url}}"], "path": ["api", "productos"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+          "pm.test(\"Lista de productos\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Crear mesa",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": { "raw": "{{base_url}}/api/mesas", "host": ["{{base_url}}"], "path": ["api", "mesas"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Mesa 1\",\n  \"personas\": 4,\n  \"active\": true\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+          "pm.test(\"Mesa creada\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Listar mesas",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{base_url}}/api/mesas", "host": ["{{base_url}}"], "path": ["api", "mesas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+          "pm.test(\"Lista de mesas\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Crear pedido",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": { "raw": "{{base_url}}/api/orders", "host": ["{{base_url}}"], "path": ["api", "orders"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"table_id\": 1,\n  \"user_id\": 1,\n  \"type\": \"mesa\",\n  \"notes\": \"Sin cebolla\",\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 2, \"notes\": \"Bien cocido\" }\n  ]\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+          "pm.test(\"Pedido creado\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Crear usuario",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": { "raw": "{{base_url}}/api/usuarios", "host": ["{{base_url}}"], "path": ["api", "usuarios"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Juan Pérez\",\n  \"username\": \"juan\",\n  \"pin\": \"1234\",\n  \"role\": \"mesero\",\n  \"active\": true\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+          "pm.test(\"Usuario creado\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Login usuario",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"juan\",\n  \"pin\": \"1234\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+          "pm.test(\"Token recibido\", function () { pm.expect(pm.response.json()).to.have.property(\"token\"); });"
+        ] }
+      }]
+    }
+  ]
+}

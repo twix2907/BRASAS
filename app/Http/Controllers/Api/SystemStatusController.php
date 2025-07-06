@@ -8,6 +8,23 @@ use Illuminate\Http\Request;
 class SystemStatusController extends Controller
 {
     /**
+     * Cierra el sistema (cambia el estado global a cerrado)
+     */
+    public function close()
+    {
+        // Aquí iría la lógica real de cierre del sistema
+        return response()->json(['message' => 'Sistema cerrado'], 200);
+    }
+
+    /**
+     * Abre el sistema (cambia el estado global a abierto)
+     */
+    public function open()
+    {
+        // Aquí iría la lógica real de apertura del sistema
+        return response()->json(['message' => 'Sistema abierto'], 200);
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index()

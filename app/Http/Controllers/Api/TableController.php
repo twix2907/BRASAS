@@ -36,7 +36,7 @@ class TableController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:tables,name',
-            'personas' => 'nullable|integer|min:0|max:30',
+            'personas' => 'required|integer|min:1|max:30',
         ]);
         $validated['active'] = true;
         $validated['status'] = 'libre';
