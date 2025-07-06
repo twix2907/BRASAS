@@ -4,6 +4,5 @@ nixPkgs = [
   "nginx",
   "libmysqlclient",
   "phpPackages.composer",
-  "nodejs_20",
-  "npm-10_x"
+  "nodejs_20"
 ]
