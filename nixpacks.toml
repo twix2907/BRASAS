@@ -1,8 +1,17 @@
 [phases.setup]
 nixPkgs = [
   "php",
-  "nginx", 
-  "libmysqlclient",
+  "nginx",
+  "libmysqlclient", 
   "phpPackages.composer",
   "nodejs_22"
 ]
+
+[phases.install]
+cmds = [
+  "composer install --no-dev --optimize-autoloader",
+  "cd resources/js && npm install && npm run build"
+]
+
+[phases.start]
+cmd = "bash start.sh && php-fpm & nginx -g 'daemon off;'"

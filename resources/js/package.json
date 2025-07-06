@@ -7,8 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "heroku-postbuild": "cd resources/js && npm install && npm run build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.10.0",
