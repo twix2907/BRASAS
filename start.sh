@@ -24,4 +24,4 @@ php artisan config:cache
 php artisan route:cache
 
 # 8. Iniciar el servidor de Laravel (usando el puerto que Railway asigna)
-php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+npx serve-laravel start
