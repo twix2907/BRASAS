@@ -20,7 +20,12 @@ return [
     'allowed_methods' => ['*'],
 
     // Solo permitir el origen de tu frontend Vite (React)
-    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins' => [
+        'https://brasas-production.up.railway.app', // <--- Tu dominio real en Railway
+        'http://localhost:5173',    // (Opcional: para desarrollo local con Vite)
+        'http://127.0.0.1:8000',    // (Opcional: para pruebas locales)
+        'http://localhost:8000',    // (Opcional)
+    ],
 
     'allowed_origins_patterns' => [],
 

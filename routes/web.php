@@ -1,12 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 // (El login por pin solo se gestiona por API, no aquí)
 
+// Catch-all solo para rutas que NO sean assets ni API
 Route::get('/{any}', function () {
-    return file_get_contents(public_path('index.html'));
-})->where('any', '.*');
+    $path = public_path('build/index.html');
+    if (File::exists($path)) {
+        return Response::file($path);
+    }
+    abort(404);
+})->where('any', '^(?!build|api|images|favicon\.ico|robots\.txt).*$');

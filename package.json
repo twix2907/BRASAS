@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "cd resources/js && npm install && npm run build && cd ../.. && npm run build:laravel && composer install --no-dev --optimize-autoloader",
+        "build:laravel": "vite build",
         "dev": "vite"
     },
     "devDependencies": {
