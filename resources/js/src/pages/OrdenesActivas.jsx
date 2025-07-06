@@ -162,7 +162,11 @@ function OrdenesActivas() {
                       border: esHistorico ? '2px solid #888' : '2px solid #ffd203',
                       borderRadius: 16,
                       padding: '0.7rem 1.1rem', // padding reducido
-                      boxShadow: esHistorico ? '0 2px 12px 0 rgba(100,100,100,0.10)' : '0 2px 12px 0 rgba(0,0,0,0.10)',
+                      boxShadow: expandidaEsta 
+                        ? '0 0 0 3px #ffd203' 
+                        : esHistorico 
+                        ? '0 2px 12px 0 rgba(100,100,100,0.10)' 
+                        : '0 2px 12px 0 rgba(0,0,0,0.10)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 8,
@@ -173,7 +177,6 @@ function OrdenesActivas() {
                       opacity: esHistorico ? 0.7 : 1,
                       cursor: 'pointer',
                       transition: 'box-shadow 0.2s',
-                      boxShadow: expandidaEsta ? '0 0 0 3px #ffd203' : undefined,
                       justifyContent: 'flex-start',
                       alignItems: 'stretch',
                     }}

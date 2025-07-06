@@ -2,8 +2,16 @@ import './App.css'
 import React, { useState } from 'react';
 import axios from './axiosConfig';
 import { useSessionWatcher } from './hooks/useSessionWatcher';
+import { debugUrls } from './debug/urlDebug';
 
 function App() {
+  // Debug URLs en desarrollo
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development' || window.location.hostname !== 'localhost') {
+      debugUrls();
+    }
+  }, []);
+
   // Obtener usuario autenticado
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   useSessionWatcher();

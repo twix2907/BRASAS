@@ -7,5 +7,5 @@ export default defineConfig({
     outDir: '../../public/build',
     emptyOutDir: true,
   },
-  base: '/build/', // <--- ¡Agrega esta línea!
+  base: '/build/',
 })
