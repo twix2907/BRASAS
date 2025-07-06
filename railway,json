@@ -1,0 +1,12 @@
+{
+  "services": {
+    "app": {
+      "build": {
+        "command": "cd resources/js && npm install && npm run build && cd ../.. && composer install --no-dev --optimize-autoloader"  
+      },
+      "start": {
+        "command": "php artisan serve --host=0.0.0.0 --port=$PORT"
+      }
+    }
+  }
+}
