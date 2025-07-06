@@ -2,5 +2,8 @@
   "scripts": {
     "build": "cd resources/js && npm install && npm run build && cd ../.. && composer install --no-dev --optimize-autoloader",
     "start": "php artisan serve --host=0.0.0.0 --port=$PORT"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
