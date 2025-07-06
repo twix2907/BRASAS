@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
+import { apiUrl } from '../utils/apiUrl';
 
 
 // Obtiene usuarios reales desde la API
@@ -13,7 +14,7 @@ export default function Login({ onLogin }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/usuarios?active=1')
+    fetch(apiUrl('/api/usuarios?active=1'))
       .then(res => res.json())
       .then(data => {
         // Solo usuarios activos (por seguridad, aunque ya se filtra en backend)
@@ -47,13 +48,13 @@ export default function Login({ onLogin }) {
   // Espera hasta que la cookie de sesión esté presente
   async function ensureSessionCookie() {
     // Primero pide el CSRF
-    await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+    await fetch(apiUrl('/sanctum/csrf-cookie'), {
       credentials: 'include',
     });
     // Si ya está la cookie de sesión, sigue
     if (getCookie('laravel_session')) return;
     // Si no, fuerza una petición dummy para crear la sesión
-    await fetch('http://localhost:8000/api/session-status', {
+    await fetch(apiUrl('/api/session-status'), {
       credentials: 'include',
     });
     // Espera hasta que la cookie esté presente (máx 500ms)
@@ -83,7 +84,7 @@ export default function Login({ onLogin }) {
       await ensureSessionCookie();
       const xsrfToken = getCookie('XSRF-TOKEN');
       // 2. Hacer login con el header X-XSRF-TOKEN
-      const res = await fetch('http://localhost:8000/api/login', {
+      const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
