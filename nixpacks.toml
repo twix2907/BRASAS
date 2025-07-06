@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = [
+  "php.withExtensions (pe: pe.enabled ++ [])",
+  "nginx",
+  "libmysqlclient",
+  "phpPackages.composer",
+  "nodejs_20",
+  "npm-10_x"
+]
