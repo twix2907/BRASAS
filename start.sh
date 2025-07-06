@@ -22,6 +22,3 @@ php artisan migrate --force
 # 7. Cachear configuración y rutas para producción
 php artisan config:cache
 php artisan route:cache
-
-# 8. Iniciar el servidor de Laravel (usando el puerto que Railway asigna)
-npx serve-laravel start
