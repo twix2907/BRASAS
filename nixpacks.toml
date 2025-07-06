@@ -1,6 +1,6 @@
 [phases.setup]
 nixPkgs = [
-  "php.withExtensions (pe: pe.enabled ++ [])",
+  "php",
   "nginx",
   "libmysqlclient",
   "phpPackages.composer",
