@@ -8,7 +8,7 @@ import AdminGateway from './AdminGateway';
 import Login from '../../pages/Login';
 import LayoutBase from '../LayoutBase';
 
-const MainApp = ({ children }) => {
+const MainApp = () => {
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [workerAuthenticated, setWorkerAuthenticated] = useState(false);
   const navigate = useNavigate();
@@ -70,9 +70,7 @@ const MainApp = ({ children }) => {
     usuario = null;
   }
   return (
-    <LayoutBase user={usuario}>
-      {children}
-    </LayoutBase>
+    <LayoutBase user={usuario} />
   );
 };
 
