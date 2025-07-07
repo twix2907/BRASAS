@@ -4,32 +4,29 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 const RoleRedirect = () => {
-  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
-  
+  const { user: usuario } = useUser();
   if (!usuario) {
     return <Navigate to="/login" replace />;
   }
-
   // Definir la primera ruta por defecto según el rol
   const getDefaultRoute = (role) => {
     switch (role) {
       case 'admin':
-        return '/pedidos'; // Admin puede ir a pedidos
+        return '/pedidos';
       case 'mesero':
-        return '/mesas'; // Mesero va directo a mesas
+        return '/mesas';
       case 'cajero':
-        return '/caja'; // Cajero va directo a caja
+        return '/caja';
       case 'cocina':
-        return '/ordenes-activas'; // Cocina va directo a órdenes
+        return '/ordenes-activas';
       default:
         return '/pedidos';
     }
   };
-
   const defaultRoute = getDefaultRoute(usuario.role);
-  
   return <Navigate to={defaultRoute} replace />;
 };
 

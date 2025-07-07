@@ -1,9 +1,10 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 // roles: string | string[]
 export default function RequireRole({ roles, children }) {
-  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+  const { user: usuario } = useUser();
   if (!usuario) return <Navigate to="/login" />;
   const noAccess = (typeof roles === 'string' && usuario.role !== roles) || (Array.isArray(roles) && !roles.includes(usuario.role));
   if (noAccess) {
