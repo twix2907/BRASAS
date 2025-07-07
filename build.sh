@@ -10,6 +10,10 @@ npm install
 npm run build
 cd ../..
 
+echo "Setting up start script permissions..."
+chmod +x start.sh
+cd ../..
+
 echo "Optimizing Laravel..."
 php artisan config:cache
 php artisan route:cache

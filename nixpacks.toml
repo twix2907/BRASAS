@@ -2,7 +2,7 @@
 nixPkgs = ["php82", "php82Packages.composer", "nodejs_20"]
 
 [phases.build]
-cmds = ["chmod +x build.sh", "./build.sh", "chmod +x start.sh"]
+cmds = ["chmod +x build.sh", "./build.sh"]
 
 [start]
 cmd = "./start.sh"
