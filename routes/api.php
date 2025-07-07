@@ -12,7 +12,12 @@ use App\Http\Controllers\Api\MenuController;
 
 // Health check para Railway
 Route::get('/health', function () {
-    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+    return response()->json(['status' => 'healthy'], 200);
+});
+
+// Health check alternativo
+Route::get('/up', function () {
+    return response('OK', 200);
 });
 
 // Endpoint público para la carta/menu
