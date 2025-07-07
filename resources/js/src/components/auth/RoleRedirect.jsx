@@ -1,14 +1,15 @@
 // components/auth/RoleRedirect.jsx
 // Componente que redirige automáticamente según el rol del usuario
+// Usado principalmente cuando alguien navega manualmente a "/"
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const RoleRedirect = () => {
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
   
   if (!usuario) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   // Definir la primera ruta por defecto según el rol
