@@ -10,6 +10,11 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\CloudinaryImageController;
 use App\Http\Controllers\Api\MenuController;
 
+// Health check para Railway
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+});
+
 // Endpoint público para la carta/menu
 Route::get('/menu', [MenuController::class, 'index']);
 
