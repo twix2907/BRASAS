@@ -36,6 +36,26 @@ const SidebarLink = styled(NavLink)`
   }
 `;
 
+const LogoutButton = styled.button`
+  color: #ffd203;
+  margin: 18px 0;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  border-radius: 12px;
+  transition: background 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  &:hover {
+    background: #ffd20322;
+    color: #fffbe7;
+  }
+`;
+
 const Main = styled.main`
   margin-left: 80px;
   height: 100vh;
@@ -93,16 +113,55 @@ const ContentContainer = styled.div`
 `;
 
 export default function LayoutBase({ user }) {
+  // Función para cerrar sesión directamente
+  const handleLogout = () => {
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_email');
+    window.location.href = '/login';
+  };
+
+  // Definir qué secciones puede ver cada rol
+  const getAvailableSections = (userRole) => {
+    const sections = [];
+
+    // Todas las secciones disponibles con sus permisos
+    const allSections = [
+      { path: "/pedidos", icon: FaUtensils, title: "Pedidos", roles: ["admin", "mesero", "cajero"] },
+      { path: "/caja", icon: FaCashRegister, title: "Caja", roles: ["admin", "cajero"] },
+      { path: "/mesas", icon: FaTable, title: "Mesas", roles: ["admin", "mesero"] },
+      { path: "/productos", icon: FaClipboardList, title: "Menú", roles: ["admin"] },
+      { path: "/usuarios", icon: FaUsers, title: "Usuarios", roles: ["admin"] },
+      { path: "/ordenes-activas", icon: FaChartBar, title: "Órdenes", roles: ["admin", "cocina"] }
+    ];
+
+    // Filtrar secciones según el rol del usuario
+    allSections.forEach(section => {
+      if (section.roles.includes(userRole)) {
+        sections.push(section);
+      }
+    });
+
+    return sections;
+  };
+
+  const userRole = user?.role || 'admin';
+  const availableSections = getAvailableSections(userRole);
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#010001' }}>
       <Sidebar>
-        <SidebarLink to="/pedidos" title="Pedidos"><FaUtensils /></SidebarLink>
-        <SidebarLink to="/caja" title="Caja"><FaCashRegister /></SidebarLink>
-        <SidebarLink to="/mesas" title="Mesas"><FaTable /></SidebarLink>
-        <SidebarLink to="/productos" title="Menú"><FaClipboardList /></SidebarLink>
-        <SidebarLink to="/usuarios" title="Usuarios"><FaUsers /></SidebarLink>
-        <SidebarLink to="/ordenes-activas" title="Órdenes"><FaChartBar /></SidebarLink>
-        <SidebarLink to="/logout" title="Cerrar sesión"><FaSignOutAlt /></SidebarLink>
+        {availableSections.map((section) => {
+          const IconComponent = section.icon;
+          return (
+            <SidebarLink key={section.path} to={section.path} title={section.title}>
+              <IconComponent />
+            </SidebarLink>
+          );
+        })}
+        <LogoutButton onClick={handleLogout} title="Cerrar sesión">
+          <FaSignOutAlt />
+        </LogoutButton>
       </Sidebar>
       <Main>
         <Header>
