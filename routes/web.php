@@ -6,11 +6,7 @@ use Illuminate\Support\Facades\Response;
 
 // Health check para Railway
 Route::get('/', function () {
-    return response()->json([
-        'status' => 'ok', 
-        'app' => 'D\'Brasas y Carbón',
-        'timestamp' => now()
-    ]);
+    return 'OK - D\'Brasas y Carbón - ' . now();
 });
 
 // (El login por pin solo se gestiona por API, no aquí)
