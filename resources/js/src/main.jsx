@@ -13,6 +13,7 @@ import MenuPublico from './pages/MenuPublico.jsx';
 import ProtectedApp from './ProtectedApp.jsx';
 import MainApp from './components/auth/MainApp.jsx';
 import RequireRole from './components/auth/RequireRole.jsx';
+import RoleRedirect from './components/auth/RoleRedirect.jsx';
 import LayoutBase from './components/LayoutBase.jsx';
 import { printTicket, vistaPreviaTicket } from './helpers/printTicket';
 import ModalVistaPreviaTicket from './components/ModalVistaPreviaTicket';
@@ -97,7 +98,8 @@ function Root() {
           } />
           {/* Rutas protegidas: layout base y children */}
           <Route element={isAuthenticated() ? <MainApp><LayoutBase user={JSON.parse(localStorage.getItem('usuario')||'null')} /></MainApp> : <Navigate to="/login" /> }>
-            <Route path="/" element={<ProtectedApp><App /></ProtectedApp>} />
+            <Route path="/" element={<ProtectedApp><RoleRedirect /></ProtectedApp>} />
+            <Route path="/bienvenida" element={<ProtectedApp><App /></ProtectedApp>} />
             <Route path="/mesas" element={<ProtectedApp><RequireRole roles={["admin","mesero"]}><Mesas /></RequireRole></ProtectedApp>} />
             <Route path="/productos" element={<ProtectedApp><RequireRole roles={["admin"]}><Productos /></RequireRole></ProtectedApp>} />
             <Route path="/pedidos" element={<ProtectedApp><RequireRole roles={["admin","mesero","cajero"]}><Pedidos /></RequireRole></ProtectedApp>} />

@@ -113,11 +113,10 @@ const ContentContainer = styled.div`
 `;
 
 export default function LayoutBase({ user }) {
-  // Función para cerrar sesión directamente
+  // Función para cerrar sesión SOLO del trabajador (mantiene admin autenticado)
   const handleLogout = () => {
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('admin_authenticated');
-    localStorage.removeItem('admin_email');
+    localStorage.removeItem('usuario'); // Solo remueve el trabajador
+    // NO remover admin_authenticated ni admin_email
     window.location.href = '/login';
   };
 
