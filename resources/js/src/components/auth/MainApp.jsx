@@ -3,6 +3,7 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminGateway from './AdminGateway';
 import Login from '../../pages/Login';
 import LayoutBase from '../LayoutBase';
@@ -10,6 +11,7 @@ import LayoutBase from '../LayoutBase';
 const MainApp = ({ children }) => {
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [workerAuthenticated, setWorkerAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   // Verificar si el admin ya está autenticado en este navegador
   useEffect(() => {
@@ -40,24 +42,9 @@ const MainApp = ({ children }) => {
     localStorage.setItem('usuario', JSON.stringify(usuario));
     setWorkerAuthenticated(true);
     
-    // Redirigir directamente a la sección correspondiente del trabajador
-    const getDefaultRoute = (role) => {
-      switch (role) {
-        case 'admin':
-          return '/pedidos';
-        case 'mesero':
-          return '/mesas';
-        case 'cajero':
-          return '/caja';
-        case 'cocina':
-          return '/ordenes-activas';
-        default:
-          return '/pedidos';
-      }
-    };
-    
-    const targetRoute = getDefaultRoute(usuario.role);
-    window.location.href = targetRoute;
+    // Navegar a la ruta raíz y dejar que RoleRedirect maneje la redirección
+    // Esto evita doble redirección y elimina el parpadeo
+    navigate('/', { replace: true });
   };
 
   // Si el admin no está autenticado, mostrar AdminGateway

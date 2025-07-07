@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FaUtensils, FaCashRegister, FaTable, FaClipboardList, FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -50,6 +50,7 @@ const LogoutButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0;
   &:hover {
     background: #ffd20322;
     color: #fffbe7;
@@ -113,11 +114,13 @@ const ContentContainer = styled.div`
 `;
 
 export default function LayoutBase({ user }) {
+  const navigate = useNavigate();
+  
   // Función para cerrar sesión SOLO del trabajador (mantiene admin autenticado)
   const handleLogout = () => {
     localStorage.removeItem('usuario'); // Solo remueve el trabajador
     // NO remover admin_authenticated ni admin_email
-    window.location.href = '/login';
+    navigate('/login', { replace: true });
   };
 
   // Definir qué secciones puede ver cada rol
