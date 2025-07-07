@@ -24,4 +24,10 @@ class ProductActualizado implements ShouldBroadcast
     {
         return new Channel('products');
     }
+    
+    // Broadcasting inmediato, no usar queue para máxima velocidad
+    public function shouldQueue()
+    {
+        return false;
+    }
 }

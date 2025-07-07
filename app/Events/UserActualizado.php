@@ -24,4 +24,10 @@ class UserActualizado implements ShouldBroadcast
     {
         return new Channel('users');
     }
+    
+    // Broadcasting inmediato, no usar queue para máxima velocidad
+    public function shouldQueue()
+    {
+        return false;
+    }
 }

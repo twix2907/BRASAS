@@ -18,9 +18,13 @@ cleanup() {
 # Capturar señales de terminación
 trap cleanup SIGTERM SIGINT
 
-echo "Iniciando queue worker..."
-# Iniciar queue worker en background
-php artisan queue:work --verbose --tries=3 --timeout=90 --sleep=3 --max-time=3600 &
+echo "Iniciando queue workers optimizados con prioridades..."
+# Worker específico para cola de alta prioridad (impresión)
+php artisan queue:work --queue=high,default --tries=3 --timeout=30 --sleep=0 --rest=0 --max-jobs=500 &
+# Worker adicional para procesamiento general
+php artisan queue:work --queue=default --tries=3 --timeout=30 --sleep=0 --rest=0 --max-jobs=500 &
+# Worker adicional para máximo rendimiento
+php artisan queue:work --queue=default --tries=3 --timeout=30 --sleep=0 --rest=0 --max-jobs=500 &
 WORKER_PID=$!
 
 echo "Queue worker iniciado con PID: $WORKER_PID"

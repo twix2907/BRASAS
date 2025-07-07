@@ -26,4 +26,16 @@ class ComandaParaImprimir implements ShouldBroadcast
         // Canal exclusivo para cocina
         return new Channel('impresion-cocina');
     }
+    
+    // Para impresión puede usar queue pero con alta prioridad
+    public function shouldQueue()
+    {
+        return true;
+    }
+    
+    // Alta prioridad para impresión
+    public function broadcastQueue()
+    {
+        return 'high';
+    }
 }
