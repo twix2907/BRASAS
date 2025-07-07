@@ -113,7 +113,8 @@ export default function Login({ onLogin }) {
           return;
         }
         const user = JSON.parse(text);
-        onLogin(user);
+        // Si la respuesta tiene .user, pasar ese objeto, si no, pasar el objeto completo
+        onLogin(user.user ? user.user : user);
       } catch (err) {
         setError('Error de conexión con el servidor');
         setIsSubmitting(false);
