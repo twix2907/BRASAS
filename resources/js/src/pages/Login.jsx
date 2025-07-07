@@ -5,10 +5,12 @@ import { apiUrl } from '../utils/apiUrl';
 
 // Obtiene usuarios reales desde la API
 
+
 export default function Login({ onLogin }) {
   const [usuarios, setUsuarios] = useState([]);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const [pin, setPin] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,12 +32,17 @@ export default function Login({ onLogin }) {
   const handleUsuarioClick = (usuario) => {
     setUsuarioSeleccionado(usuario);
     setPin('');
+    setPassword('');
     setError('');
   };
 
   const handlePinChange = (e) => {
     const value = e.target.value.replace(/\D/g, '');
     if (value.length <= 4) setPin(value);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
   };
 
   // Utilidad para leer cookies
@@ -67,23 +74,62 @@ export default function Login({ onLogin }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Forzar blur del input para evitar submit doble por Enter
     if (document.activeElement && document.activeElement.tagName === 'INPUT') {
       document.activeElement.blur();
     }
-    console.log('submit', { pin, isSubmitting, usuarioSeleccionado });
+    setError('');
     if (isSubmitting) return;
+    if (!usuarioSeleccionado) return;
+
+    // Si es admin, pedir contraseña
+    if (usuarioSeleccionado.role === 'admin') {
+      if (!password) {
+        setError('La contraseña es obligatoria.');
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        await ensureSessionCookie();
+        const xsrfToken = getCookie('XSRF-TOKEN');
+        const res = await fetch(apiUrl('/api/admin/login'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': xsrfToken ? decodeURIComponent(xsrfToken) : '',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ email: usuarioSeleccionado.email, password })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.message || 'Credenciales incorrectas');
+          setIsSubmitting(false);
+          return;
+        }
+        const text = await res.text();
+        if (!text) {
+          setError('Respuesta vacía del servidor');
+          setIsSubmitting(false);
+          return;
+        }
+        const user = JSON.parse(text);
+        onLogin(user);
+      } catch (err) {
+        setError('Error de conexión con el servidor');
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Si NO es admin, pedir PIN
     if (pin.length !== 4) {
       setError('El PIN debe tener 4 dígitos.');
       return;
     }
-    setError('');
     setIsSubmitting(true);
     try {
-      // 1. Asegura que la cookie de sesión esté presente
       await ensureSessionCookie();
       const xsrfToken = getCookie('XSRF-TOKEN');
-      // 2. Hacer login con el header X-XSRF-TOKEN
       const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
         headers: {
@@ -93,30 +139,21 @@ export default function Login({ onLogin }) {
         credentials: 'include',
         body: JSON.stringify({ username: usuarioSeleccionado.username, pin })
       });
-      
-      console.log('Response status:', res.status, 'ok:', res.ok);
-      
       if (!res.ok) {
         const data = await res.json();
         setError(data.message || 'PIN incorrecto');
         setIsSubmitting(false);
         return;
       }
-      
       const text = await res.text();
-      console.log('Response text:', text);
-      
       if (!text) {
         setError('Respuesta vacía del servidor');
         setIsSubmitting(false);
         return;
       }
-      
       const user = JSON.parse(text);
-      console.log('User parsed:', user);
       onLogin(user);
     } catch (err) {
-      console.error('Login error:', err);
       setError('Error de conexión con el servidor');
       setIsSubmitting(false);
     }
@@ -204,21 +241,68 @@ export default function Login({ onLogin }) {
             <form onSubmit={handleLogin} style={{ marginTop: '1.5rem', width: '100%', maxWidth: 340, marginLeft: 'auto', marginRight: 'auto', background: 'none', padding: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', boxSizing: 'border-box' }}>
                 <p style={{ width: '100%', textAlign: 'center', marginBottom: 8, color: '#fffbe7' }}>Usuario: <b>{usuarioSeleccionado.name}</b> <button type="button" onClick={() => setUsuarioSeleccionado(null)} style={{ marginLeft: 8, background: 'none', border: 'none', color: '#ffd203', cursor: 'pointer' }}>Cambiar</button></p>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={4}
-                  value={pin}
-                  onChange={handlePinChange}
-                  placeholder="PIN de 4 dígitos"
-                  autoFocus
-                  style={{ fontSize: '1.5rem', padding: '0.5rem 1rem', borderRadius: '0.7rem', border: '1px solid #ffd203', textAlign: 'center', width: '100%', maxWidth: 220, marginBottom: 0, boxSizing: 'border-box' }}
-                />
-                {/* Aquí iría el input de contraseña y el de código SMS si aplica para admin */}
-                {/* <input ... style={{ width: '100%', maxWidth: 220, ... }} /> */}
+                {usuarioSeleccionado.role === 'admin' ? (
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    placeholder="Contraseña de administrador"
+                    autoFocus
+                    style={{ fontSize: '1.2rem', padding: '0.5rem 1rem', borderRadius: '0.7rem', border: '1px solid #ffd203', textAlign: 'center', width: '100%', maxWidth: 220, marginBottom: 0, boxSizing: 'border-box' }}
+                  />
+                ) : (
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
+                    value={pin}
+                    onChange={handlePinChange}
+                    placeholder="PIN de 4 dígitos"
+                    autoFocus
+                    style={{ fontSize: '1.5rem', padding: '0.5rem 1rem', borderRadius: '0.7rem', border: '1px solid #ffd203', textAlign: 'center', width: '100%', maxWidth: 220, marginBottom: 0, boxSizing: 'border-box' }}
+                  />
+                )}
               </div>
-              <button type="submit" disabled={isSubmitting || pin.length !== 4} style={{ padding: '0.7rem 2.5rem', borderRadius: '1rem', background: isSubmitting || pin.length !== 4 ? '#ffe066' : '#ffd203', color: '#010001', fontWeight: 700, border: 'none', cursor: isSubmitting || pin.length !== 4 ? 'not-allowed' : 'pointer', fontSize: '1.1rem', marginTop: 18, width: '100%', maxWidth: 220, opacity: isSubmitting || pin.length !== 4 ? 0.7 : 1 }}>Entrar</button>
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  (!usuarioSeleccionado ||
+                    (usuarioSeleccionado.role === 'admin' ? !password : pin.length !== 4))
+                }
+                style={{
+                  padding: '0.7rem 2.5rem',
+                  borderRadius: '1rem',
+                  background:
+                    isSubmitting ||
+                    (!usuarioSeleccionado ||
+                      (usuarioSeleccionado.role === 'admin' ? !password : pin.length !== 4))
+                      ? '#ffe066'
+                      : '#ffd203',
+                  color: '#010001',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor:
+                    isSubmitting ||
+                    (!usuarioSeleccionado ||
+                      (usuarioSeleccionado.role === 'admin' ? !password : pin.length !== 4))
+                      ? 'not-allowed'
+                      : 'pointer',
+                  fontSize: '1.1rem',
+                  marginTop: 18,
+                  width: '100%',
+                  maxWidth: 220,
+                  opacity:
+                    isSubmitting ||
+                    (!usuarioSeleccionado ||
+                      (usuarioSeleccionado.role === 'admin' ? !password : pin.length !== 4))
+                      ? 0.7
+                      : 1,
+                }}
+              >
+                Entrar
+              </button>
               {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
             </form>
           )}
