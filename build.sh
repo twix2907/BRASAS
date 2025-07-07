@@ -10,8 +10,7 @@ npm install
 npm run build
 cd ../..
 
-echo "Setting up start script permissions..."
-chmod +x start.sh
+echo "Build completed successfully!"
 cd ../..
 
 echo "Optimizing Laravel..."

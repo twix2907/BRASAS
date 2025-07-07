@@ -5,4 +5,4 @@ nixPkgs = ["php82", "php82Packages.composer", "nodejs_20"]
 cmds = ["chmod +x build.sh", "./build.sh"]
 
 [start]
-cmd = "./start.sh"
+cmd = "php artisan config:cache && php artisan migrate --force && php artisan queue:work --verbose --tries=3 --timeout=90 --daemon & php artisan serve --host=0.0.0.0 --port=$PORT"
