@@ -1,4 +1,5 @@
 import React from 'react';
+import { useUser } from '../context/UserContext';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FaUtensils, FaCashRegister, FaTable, FaClipboardList, FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
 import styled from 'styled-components';
@@ -113,12 +114,12 @@ const ContentContainer = styled.div`
   overflow: hidden;
 `;
 
-export default function LayoutBase({ user }) {
+export default function LayoutBase() {
   const navigate = useNavigate();
-  
+  const { user, setUser } = useUser();
   // Función para cerrar sesión SOLO del trabajador (mantiene admin autenticado)
   const handleLogout = () => {
-    localStorage.removeItem('usuario'); // Solo remueve el trabajador
+    setUser(null);
     // NO remover admin_authenticated ni admin_email
     navigate('/login', { replace: true });
   };
