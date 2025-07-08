@@ -80,14 +80,9 @@ function Root() {
         <Routes>
           {/* Ruta pública para la carta/menú accesible por QR */}
           <Route path="/menu" element={<MenuPublico />} />
-          {/* Ruta de login: si ya está autenticado, redirige a home */}
-          <Route path="/login" element={
-            <AuthGate>
-              <Navigate to="/" />
-            </AuthGate>
-            || <MainApp />
-          } />
-          {/* Rutas protegidas: MainApp y children solo si autenticado */}
+          {/* Ruta de login: MainApp maneja el flujo completo (admin + trabajador) */}
+          <Route path="/login" element={<MainApp />} />
+          {/* Rutas protegidas: MainApp y children solo si ambos están autenticados */}
           <Route element={<AuthGate><MainApp /></AuthGate>}>
             <Route path="/" element={<ProtectedApp><RoleRedirect /></ProtectedApp>} />
             <Route path="/bienvenida" element={<ProtectedApp><App /></ProtectedApp>} />
@@ -99,7 +94,7 @@ function Root() {
             <Route path="/caja" element={<ProtectedApp><RequireRole roles={["admin","cajero"]}><Caja /></RequireRole></ProtectedApp>} />
           </Route>
           {/* Redirección por defecto */}
-          <Route path="*" element={<AuthGate><Navigate to="/" /></AuthGate>} />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
       <ModalVistaPreviaTicket
