@@ -20,6 +20,7 @@ import { printTicket, vistaPreviaTicket } from './helpers/printTicket';
 import ModalVistaPreviaTicket from './components/ModalVistaPreviaTicket';
 import './index.css';
 import Caja from './pages/Caja.jsx';
+import AuthGate from './components/auth/AuthGate.jsx';
 
 // Inicializar cookie CSRF una sola vez al cargar la aplicación
 (async () => {
@@ -31,20 +32,8 @@ import Caja from './pages/Caja.jsx';
   }
 })();
 
-// Simulación de autenticación usando localStorage
-function isAuthenticated() {
-  // Verificar que tanto admin como trabajador estén autenticados
-  const adminAuth = localStorage.getItem('admin_authenticated') === 'true';
-  const workerAuth = !!localStorage.getItem('usuario');
-  return adminAuth && workerAuth;
-}
 
-function isOnlyAdminAuthenticated() {
-  // Solo el admin está autenticado, pero no hay trabajador logueado
-  const adminAuth = localStorage.getItem('admin_authenticated') === 'true';
-  const workerAuth = !!localStorage.getItem('usuario');
-  return adminAuth && !workerAuth;
-}
+// Eliminado: isAuthenticated y isOnlyAdminAuthenticated. Ahora se usa AuthGate y contexto global.
 
 import echo from './echo';
 
@@ -91,14 +80,15 @@ function Root() {
         <Routes>
           {/* Ruta pública para la carta/menú accesible por QR */}
           <Route path="/menu" element={<MenuPublico />} />
-          {/* Ruta de login - ahora maneja todo el flujo de autenticación */}
+          {/* Ruta de login: si ya está autenticado, redirige a home */}
           <Route path="/login" element={
-            isAuthenticated()
-              ? <Navigate to="/" />
-              : <MainApp />
+            <AuthGate>
+              <Navigate to="/" />
+            </AuthGate>
+            || <MainApp />
           } />
-          {/* Rutas protegidas: MainApp maneja todo el layout */}
-          <Route element={isAuthenticated() ? <MainApp /> : <Navigate to="/login" /> }>
+          {/* Rutas protegidas: MainApp y children solo si autenticado */}
+          <Route element={<AuthGate><MainApp /></AuthGate>}>
             <Route path="/" element={<ProtectedApp><RoleRedirect /></ProtectedApp>} />
             <Route path="/bienvenida" element={<ProtectedApp><App /></ProtectedApp>} />
             <Route path="/mesas" element={<ProtectedApp><RequireRole roles={["admin","mesero"]}><Mesas /></RequireRole></ProtectedApp>} />
@@ -109,7 +99,7 @@ function Root() {
             <Route path="/caja" element={<ProtectedApp><RequireRole roles={["admin","cajero"]}><Caja /></RequireRole></ProtectedApp>} />
           </Route>
           {/* Redirección por defecto */}
-          <Route path="*" element={<Navigate to={isAuthenticated() ? "/" : "/login"} />} />
+          <Route path="*" element={<AuthGate><Navigate to="/" /></AuthGate>} />
         </Routes>
       </BrowserRouter>
       <ModalVistaPreviaTicket
